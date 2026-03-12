@@ -92,7 +92,7 @@ export function InputPanel({ params, onChange }: Props) {
           </div>
         </Section>
 
-        <Section title="Usage Parameters">
+        <Section title="Usage Parameters" defaultOpen={true}>
           <div className="param-grid">
             {numField("Requests per day", "requestsPerDay", "1")}
             {numField("Avg tokens / request", "avgTokensPerRequest", "1")}

@@ -12,8 +12,8 @@ function fmtAxis(n: number): string {
 }
 
 export function CrossoverChart({ params }: Props) {
-  const { points, crossoverDays, results } = generateChartData(params, 365);
-  const crossoverDay = crossoverDays < 365 ? Math.round(crossoverDays) : null;
+  const { points, crossoverDays, results } = generateChartData(params);
+  const crossoverDay = crossoverDays < params.days ? Math.round(crossoverDays) : null;
 
   return (
     <div className="p-6 space-y-4 h-full flex flex-col">
