@@ -1,4 +1,6 @@
 export interface TCOParams {
+  // Timeline
+  days: number;
   // Model config
   modelType: 'api' | 'cloud' | 'self-hosted';
   inputTokenPrice: number;
