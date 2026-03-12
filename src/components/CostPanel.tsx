@@ -76,7 +76,7 @@ export function CostPanel({ params }: Props) {
         <p>C_inference = tokens + retrieval + reranking + guardrails + tools + compute</p>
         <p>Optimized = base × cache × routing × compression × batch × quant</p>
         <p className="font-semibold text-foreground text-sm mt-3">
-          Total TCO (1yr): {fmt(r.tco)}
+          Total TCO ({params.days} days): {fmt(r.tco)}
         </p>
       </div>
     </div>
