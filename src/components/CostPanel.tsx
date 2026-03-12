@@ -18,9 +18,10 @@ function fmtNum(n: number): string {
 
 export function CostPanel({ params }: Props) {
   const r = calculateTCO(params);
-  const dominant = r.crossoverDays < 365
+  const dominant = r.crossoverDays < params.days
     ? "Inference costs dominate"
     : "Training costs dominate";
+  const inferencePer10k = r.inferencePerRequest * 10000;
 
   return (
     <div className="p-6 space-y-6">
