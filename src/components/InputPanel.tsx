@@ -13,8 +13,8 @@ interface Props {
   onChange: (p: TCOParams) => void;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(true);
+function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="param-section">
       <CollapsibleTrigger className="flex items-center justify-between w-full">
