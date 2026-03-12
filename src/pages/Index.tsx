@@ -1,11 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { TCOParams, defaultParams } from "@/lib/tco-calculations";
+import { InputPanel } from "@/components/InputPanel";
+import { CostPanel } from "@/components/CostPanel";
+import { CrossoverChart } from "@/components/CrossoverChart";
 
 const Index = () => {
+  const [params, setParams] = useState<TCOParams>(defaultParams);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card px-6 py-3 flex items-center gap-3">
+        <div className="w-2 h-2 rounded-full bg-accent" />
+        <h1 className="text-base font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          LLM Total Cost of Ownership
+        </h1>
+        <span className="text-xs text-muted-foreground ml-2">Calculator</span>
+      </header>
+
+      {/* Three panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_1fr] h-[calc(100vh-3.25rem)]">
+        {/* Left: Inputs */}
+        <div className="border-r bg-card overflow-hidden">
+          <InputPanel params={params} onChange={setParams} />
+        </div>
+
+        {/* Center: Cost calculations */}
+        <div className="border-r overflow-auto">
+          <CostPanel params={params} />
+        </div>
+
+        {/* Right: Crossover chart */}
+        <div className="overflow-hidden">
+          <CrossoverChart params={params} />
+        </div>
       </div>
     </div>
   );
