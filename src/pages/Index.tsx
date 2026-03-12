@@ -25,14 +25,14 @@ const Index = () => {
           <InputPanel params={params} onChange={setParams} />
         </div>
 
-        {/* Center: Crossover chart */}
-        <div className="border-r overflow-hidden">
-          <CrossoverChart params={params} />
+        {/* Center: Cost calculations (2/5) */}
+        <div className="border-r overflow-auto">
+          <CostPanel params={params} />
         </div>
 
-        {/* Right: Cost calculations */}
-        <div className="overflow-auto">
-          <CostPanel params={params} />
+        {/* Right: Crossover chart (3/5) */}
+        <div className="overflow-hidden">
+          <CrossoverChart params={params} />
         </div>
       </div>
     </div>
