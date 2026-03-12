@@ -112,8 +112,8 @@ export function calculateTCO(p: TCOParams) {
   const cEngineering = p.engineeringHours * p.costPerHour;
   const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost;
 
-  // Annual inference
-  const annualInference = cInferenceOptimized * p.requestsPerDay * 365;
+  // Period inference
+  const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;
 
   // TCO
   const tco = cTraining + annualInference;
