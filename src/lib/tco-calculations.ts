@@ -134,8 +134,9 @@ export function calculateTCO(p: TCOParams) {
   };
 }
 
-export function generateChartData(p: TCOParams, days: number = 365) {
+export function generateChartData(p: TCOParams) {
   const results = calculateTCO(p);
+  const days = p.days;
   const points: Array<{ day: number; training: number; inference: number }> = [];
   const step = Math.max(1, Math.floor(days / 100));
 
