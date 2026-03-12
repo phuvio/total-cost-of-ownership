@@ -60,7 +60,7 @@ export function CostPanel({ params }: Props) {
         <div className="flex items-center gap-2">
           <div
             className="w-3 h-3 rounded-full"
-            style={{ background: r.crossoverDays < 365 ? 'hsl(var(--chart-inference))' : 'hsl(var(--chart-training))' }}
+            style={{ background: r.crossoverDays < params.days ? 'hsl(var(--chart-inference))' : 'hsl(var(--chart-training))' }}
           />
           <span className="text-sm font-medium">{dominant}</span>
         </div>
