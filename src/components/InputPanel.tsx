@@ -4,10 +4,31 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
   params: TCOParams;
   onChange: (p: TCOParams) => void;
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="param-section">
+      <CollapsibleTrigger className="flex items-center justify-between w-full">
+        <span className="param-section-title mb-0">{title}</span>
+        <ChevronDown
+          className="h-4 w-4 text-muted-foreground transition-transform"
+          style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-3">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 export function InputPanel({ params, onChange }: Props) {
@@ -44,9 +65,7 @@ export function InputPanel({ params, onChange }: Props) {
           Input Parameters
         </h2>
 
-        {/* Model Configuration */}
-        <div className="param-section">
-          <div className="param-section-title">Model Configuration</div>
+        <Section title="Model Configuration">
           <div className="param-grid">
             <div className="grid grid-cols-2 items-center gap-2">
               <Label className="param-label">Model Type</Label>
@@ -66,22 +85,18 @@ export function InputPanel({ params, onChange }: Props) {
             {numField("Context length", "contextLength", "1")}
             {numField("Response length", "responseLength", "1")}
           </div>
-        </div>
+        </Section>
 
-        {/* Usage Parameters */}
-        <div className="param-section">
-          <div className="param-section-title">Usage Parameters</div>
+        <Section title="Usage Parameters">
           <div className="param-grid">
             {numField("Requests per day", "requestsPerDay", "1")}
             {numField("Avg tokens / request", "avgTokensPerRequest", "1")}
             {numField("Avg response tokens", "avgResponseTokens", "1")}
             {numField("Peak load multiplier", "peakLoadMultiplier", "0.1")}
           </div>
-        </div>
+        </Section>
 
-        {/* System Architecture */}
-        <div className="param-section">
-          <div className="param-section-title">System Architecture</div>
+        <Section title="System Architecture">
           <div className="param-grid space-y-1">
             {toggle("Vector Database", "vectorDb")}
             {toggle("Embedding Generation", "embeddingGen")}
@@ -92,11 +107,9 @@ export function InputPanel({ params, onChange }: Props) {
             {numField("Embedding cost / req ($)", "embeddingCostPerReq", "0.0001")}
             {numField("Reranker cost / req ($)", "rerankerCostPerReq", "0.0001")}
           </div>
-        </div>
+        </Section>
 
-        {/* Optimization Toggles */}
-        <div className="param-section">
-          <div className="param-section-title">Optimization Toggles</div>
+        <Section title="Optimization Toggles">
           <div className="param-grid space-y-1">
             {toggle("Caching", "caching")}
             {toggle("Model Routing", "modelRouting")}
@@ -108,11 +121,9 @@ export function InputPanel({ params, onChange }: Props) {
             {numField("Batch size", "batchSize", "1")}
             {numField("Token reduction (%)", "tokenReduction", "1")}
           </div>
-        </div>
+        </Section>
 
-        {/* Development Cost */}
-        <div className="param-section">
-          <div className="param-section-title">Development Cost</div>
+        <Section title="Development Cost">
           <div className="param-grid">
             {numField("Engineering hours", "engineeringHours", "1")}
             {numField("Cost per hour ($/hr)", "costPerHour", "1")}
@@ -121,7 +132,7 @@ export function InputPanel({ params, onChange }: Props) {
             {numField("Fine-tuning cost ($)", "finetuningCost", "1")}
             {numField("Data preparation cost ($)", "dataPreparationCost", "1")}
           </div>
-        </div>
+        </Section>
       </div>
     </ScrollArea>
   );
