@@ -13,8 +13,8 @@ interface Props {
   onChange: (p: TCOParams) => void;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(true);
+function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="param-section">
       <CollapsibleTrigger className="flex items-center justify-between w-full">
@@ -64,8 +64,13 @@ export function InputPanel({ params, onChange }: Props) {
         <h2 className="text-sm font-bold uppercase tracking-widest text-primary mb-4" style={{ fontFamily: 'var(--font-display)' }}>
           Input Parameters
         </h2>
+        <Section title="Days" defaultOpen={true}>
+          <div className="param-grid">
+            {numField("Number of days", "days", "1")}
+          </div>
+        </Section>
 
-        <Section title="Model Configuration">
+        <Section title="Model Configuration" defaultOpen={true}>
           <div className="param-grid">
             <div className="grid grid-cols-2 items-center gap-2">
               <Label className="param-label">Model Type</Label>
@@ -87,7 +92,7 @@ export function InputPanel({ params, onChange }: Props) {
           </div>
         </Section>
 
-        <Section title="Usage Parameters">
+        <Section title="Usage Parameters" defaultOpen={true}>
           <div className="param-grid">
             {numField("Requests per day", "requestsPerDay", "1")}
             {numField("Avg tokens / request", "avgTokensPerRequest", "1")}

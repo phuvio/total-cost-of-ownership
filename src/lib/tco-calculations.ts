@@ -1,4 +1,6 @@
 export interface TCOParams {
+  // Timeline
+  days: number;
   // Model config
   modelType: 'api' | 'cloud' | 'self-hosted';
   inputTokenPrice: number;
@@ -39,6 +41,7 @@ export interface TCOParams {
 }
 
 export const defaultParams: TCOParams = {
+  days: 365,
   modelType: 'api',
   inputTokenPrice: 0.00001,
   outputTokenPrice: 0.00003,
@@ -109,8 +112,8 @@ export function calculateTCO(p: TCOParams) {
   const cEngineering = p.engineeringHours * p.costPerHour;
   const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost;
 
-  // Annual inference
-  const annualInference = cInferenceOptimized * p.requestsPerDay * 365;
+  // Period inference
+  const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;
 
   // TCO
   const tco = cTraining + annualInference;
@@ -131,8 +134,9 @@ export function calculateTCO(p: TCOParams) {
   };
 }
 
-export function generateChartData(p: TCOParams, days: number = 365) {
+export function generateChartData(p: TCOParams) {
   const results = calculateTCO(p);
+  const days = p.days;
   const points: Array<{ day: number; training: number; inference: number }> = [];
   const step = Math.max(1, Math.floor(days / 100));
 

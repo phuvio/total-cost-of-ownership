@@ -18,9 +18,10 @@ function fmtNum(n: number): string {
 
 export function CostPanel({ params }: Props) {
   const r = calculateTCO(params);
-  const dominant = r.crossoverDays < 365
+  const dominant = r.crossoverDays < params.days
     ? "Inference costs dominate"
     : "Training costs dominate";
+  const inferencePer10k = r.inferencePerRequest * 10000;
 
   return (
     <div className="p-6 space-y-6">
@@ -29,6 +30,10 @@ export function CostPanel({ params }: Props) {
       </h2>
 
       <div className="grid grid-cols-2 gap-4">
+        <div className="metric-card col-span-2">
+          <div className="metric-value text-foreground">{params.days}</div>
+          <div className="metric-label">Number of Days</div>
+        </div>
         <div className="metric-card">
           <div className="metric-value text-foreground">{fmt(r.trainingCost)}</div>
           <div className="metric-label">Training Cost</div>
@@ -38,12 +43,16 @@ export function CostPanel({ params }: Props) {
           <div className="metric-label">Inference Cost / Request</div>
         </div>
         <div className="metric-card">
+          <div className="metric-value text-foreground">{fmt(inferencePer10k)}</div>
+          <div className="metric-label">Inference Cost / 10,000 Req</div>
+        </div>
+        <div className="metric-card">
           <div className="metric-value text-foreground">{fmtNum(r.requestsPerDay)}</div>
           <div className="metric-label">Requests per Day</div>
         </div>
-        <div className="metric-card">
+        <div className="metric-card col-span-2">
           <div className="metric-value text-foreground">{fmt(r.annualInference)}</div>
-          <div className="metric-label">Annual Inference Cost</div>
+          <div className="metric-label">Total Inference Cost ({params.days} days)</div>
         </div>
       </div>
 
@@ -51,7 +60,7 @@ export function CostPanel({ params }: Props) {
         <div className="flex items-center gap-2">
           <div
             className="w-3 h-3 rounded-full"
-            style={{ background: r.crossoverDays < 365 ? 'hsl(var(--chart-inference))' : 'hsl(var(--chart-training))' }}
+            style={{ background: r.crossoverDays < params.days ? 'hsl(var(--chart-inference))' : 'hsl(var(--chart-training))' }}
           />
           <span className="text-sm font-medium">{dominant}</span>
         </div>
@@ -67,7 +76,7 @@ export function CostPanel({ params }: Props) {
         <p>C_inference = tokens + retrieval + reranking + guardrails + tools + compute</p>
         <p>Optimized = base × cache × routing × compression × batch × quant</p>
         <p className="font-semibold text-foreground text-sm mt-3">
-          Total TCO (1yr): {fmt(r.tco)}
+          Total TCO ({params.days} days): {fmt(r.tco)}
         </p>
       </div>
     </div>
