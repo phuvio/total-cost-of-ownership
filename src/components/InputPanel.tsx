@@ -64,8 +64,13 @@ export function InputPanel({ params, onChange }: Props) {
         <h2 className="text-sm font-bold uppercase tracking-widest text-primary mb-4" style={{ fontFamily: 'var(--font-display)' }}>
           Input Parameters
         </h2>
+        <Section title="Days" defaultOpen={true}>
+          <div className="param-grid">
+            {numField("Number of days", "days", "1")}
+          </div>
+        </Section>
 
-        <Section title="Model Configuration">
+        <Section title="Model Configuration" defaultOpen={true}>
           <div className="param-grid">
             <div className="grid grid-cols-2 items-center gap-2">
               <Label className="param-label">Model Type</Label>
