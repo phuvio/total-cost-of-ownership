@@ -41,6 +41,7 @@ export interface TCOParams {
 }
 
 export const defaultParams: TCOParams = {
+  days: 365,
   modelType: 'api',
   inputTokenPrice: 0.00001,
   outputTokenPrice: 0.00003,
