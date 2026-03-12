@@ -19,7 +19,7 @@ const Index = () => {
       </header>
 
       {/* Three panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_1fr] h-[calc(100vh-3.25rem)]">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_2fr_3fr] h-[calc(100vh-3.25rem)]">
         {/* Left: Inputs */}
         <div className="border-r bg-card overflow-hidden">
           <InputPanel params={params} onChange={setParams} />
