@@ -19,20 +19,20 @@ const Index = () => {
       </header>
 
       {/* Three panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_1fr] h-[calc(100vh-3.25rem)]">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_2fr_3fr] h-[calc(100vh-3.25rem)]">
         {/* Left: Inputs */}
         <div className="border-r bg-card overflow-hidden">
           <InputPanel params={params} onChange={setParams} />
         </div>
 
-        {/* Center: Crossover chart */}
-        <div className="border-r overflow-hidden">
-          <CrossoverChart params={params} />
+        {/* Center: Cost calculations (2/5) */}
+        <div className="border-r overflow-auto">
+          <CostPanel params={params} />
         </div>
 
-        {/* Right: Cost calculations */}
-        <div className="overflow-auto">
-          <CostPanel params={params} />
+        {/* Right: Crossover chart (3/5) */}
+        <div className="overflow-hidden">
+          <CrossoverChart params={params} />
         </div>
       </div>
     </div>
