@@ -57,13 +57,21 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={mergedPoints} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
             <defs>
-              <linearGradient id="trainingGradActive" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="trainingGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="inferenceGradActive" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="inferenceGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="trainingGradM2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="inferenceGradM2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(45, 85%, 55%)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(45, 85%, 55%)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
@@ -92,30 +100,30 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
             />
             <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
 
-            {/* Model 1: always solid lines */}
+            {/* Model 1: solid lines, red/green */}
             {isModel1Active ? (
               <>
-                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradActive)" strokeWidth={2} name="Model 1 Training" />
-                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradActive)" strokeWidth={2} name="Model 1 Inference" />
+                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradM1)" strokeWidth={2} name="M1 Training" />
+                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name="M1 Inference" />
               </>
             ) : (
               <>
-                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="Model 1 Training" />
-                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="Model 1 Inference" />
+                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Training" />
+                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Inference" />
               </>
             )}
 
-            {/* Model 2: always dotted lines */}
+            {/* Model 2: dotted lines, purple/amber */}
             {showBoth && (
               isModel1Active ? (
                 <>
-                  <Line type="monotone" dataKey="m2Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} strokeDasharray="8 4" dot={false} name="Model 2 Training" />
-                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} strokeDasharray="8 4" dot={false} name="Model 2 Inference" />
+                  <Line type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Training" />
+                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Inference" />
                 </>
               ) : (
                 <>
-                  <Area type="monotone" dataKey="m2Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradActive)" strokeWidth={2.5} strokeDasharray="8 4" name="Model 2 Training" />
-                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradActive)" strokeWidth={2.5} strokeDasharray="8 4" name="Model 2 Inference" />
+                  <Area type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" fill="url(#trainingGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Training" />
+                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Inference" />
                 </>
               )
             )}
@@ -139,22 +147,24 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
 
       <div className="flex gap-3 text-xs flex-wrap" style={{ fontFamily: 'var(--font-display)' }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.3)' }} />
-          <span className="text-muted-foreground">Training</span>
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.5)' }} />
+          <span className="text-muted-foreground">M1 Training</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.3)' }} />
-          <span className="text-muted-foreground">Inference</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-6 h-0 border-t-2 border-muted-foreground" />
-          <span className="text-muted-foreground">Model 1 (solid)</span>
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.5)' }} />
+          <span className="text-muted-foreground">M1 Inference</span>
         </div>
         {showBoth && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-0 border-t-2 border-dashed border-muted-foreground" />
-            <span className="text-muted-foreground">Model 2 (dotted)</span>
-          </div>
+          <>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(280, 65%, 55%, 0.5)' }} />
+              <span className="text-muted-foreground">M2 Training</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(45, 85%, 55%, 0.5)' }} />
+              <span className="text-muted-foreground">M2 Inference</span>
+            </div>
+          </>
         )}
       </div>
     </div>

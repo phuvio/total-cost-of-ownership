@@ -4,6 +4,7 @@ interface Props {
   params1: TCOParams;
   params2: TCOParams;
   activeModel: 1 | 2;
+  model2Ever: boolean;
 }
 
 function fmt(n: number): string {
@@ -80,7 +81,7 @@ function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnT
   );
 }
 
-export function CostPanel({ params1, params2, activeModel }: Props) {
+export function CostPanel({ params1, params2, activeModel, model2Ever }: Props) {
   const r1 = calculateTCO(params1);
   const r2 = calculateTCO(params2);
 
@@ -92,10 +93,10 @@ export function CostPanel({ params1, params2, activeModel }: Props) {
 
       <ModelResults label="Model 1" r={r1} days={params1.days} highlight={activeModel === 1} />
 
-      {activeModel === 2 && (
+      {model2Ever && (
         <>
           <div className="border-t my-4" />
-          <ModelResults label="Model 2" r={r2} days={params2.days} highlight={true} />
+          <ModelResults label="Model 2" r={r2} days={params2.days} highlight={activeModel === 2} />
         </>
       )}
     </div>
