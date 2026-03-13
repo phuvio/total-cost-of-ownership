@@ -31,7 +31,7 @@ const Index = () => {
             params={activeModel === 1 ? params1 : params2}
             onChange={activeModel === 1 ? setParams1 : setParams2}
             activeModel={activeModel}
-            onModelChange={setActiveModel}
+            onModelChange={handleModelChange}
           />
         </div>
         <div className="border-r overflow-auto">
