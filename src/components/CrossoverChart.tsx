@@ -57,13 +57,21 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={mergedPoints} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
             <defs>
-              <linearGradient id="trainingGradActive" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="trainingGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="inferenceGradActive" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="inferenceGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="trainingGradM2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="inferenceGradM2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(45, 85%, 55%)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(45, 85%, 55%)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
