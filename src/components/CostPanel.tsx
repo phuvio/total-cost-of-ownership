@@ -4,6 +4,7 @@ interface Props {
   params1: TCOParams;
   params2: TCOParams;
   activeModel: 1 | 2;
+  model2Ever: boolean;
 }
 
 function fmt(n: number): string {
