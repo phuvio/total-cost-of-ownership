@@ -11,6 +11,8 @@ import { useState } from "react";
 interface Props {
   params: TCOParams;
   onChange: (p: TCOParams) => void;
+  activeModel: 1 | 2;
+  onModelChange: (m: 1 | 2) => void;
 }
 
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -31,7 +33,7 @@ function Section({ title, children, defaultOpen = false }: { title: string; chil
   );
 }
 
-export function InputPanel({ params, onChange }: Props) {
+export function InputPanel({ params, onChange, activeModel, onModelChange }: Props) {
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
@@ -64,6 +66,38 @@ export function InputPanel({ params, onChange }: Props) {
         <h2 className="text-sm font-bold uppercase tracking-widest text-primary mb-4" style={{ fontFamily: 'var(--font-display)' }}>
           Input Parameters
         </h2>
+
+        {/* Model Switcher */}
+        <div className="param-section">
+          <div className="flex items-center justify-between">
+            <span className="param-section-title mb-0">Active Model</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onModelChange(1)}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  activeModel === 1
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Model 1
+              </button>
+              <button
+                onClick={() => onModelChange(2)}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  activeModel === 2
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Model 2
+              </button>
+            </div>
+          </div>
+        </div>
+
         <Section title="Days" defaultOpen={true}>
           <div className="param-grid">
             {numField("Number of days", "days", "1")}
