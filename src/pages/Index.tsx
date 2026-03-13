@@ -8,6 +8,12 @@ const Index = () => {
   const [params1, setParams1] = useState<TCOParams>(defaultParams);
   const [params2, setParams2] = useState<TCOParams>(defaultParams);
   const [activeModel, setActiveModel] = useState<1 | 2>(1);
+  const [model2Ever, setModel2Ever] = useState(false);
+
+  const handleModelChange = (m: 1 | 2) => {
+    if (m === 2) setModel2Ever(true);
+    setActiveModel(m);
+  };
 
   return (
     <div className="min-h-screen bg-background">
