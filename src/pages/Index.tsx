@@ -5,11 +5,12 @@ import { CostPanel } from "@/components/CostPanel";
 import { CrossoverChart } from "@/components/CrossoverChart";
 
 const Index = () => {
-  const [params, setParams] = useState<TCOParams>(defaultParams);
+  const [params1, setParams1] = useState<TCOParams>(defaultParams);
+  const [params2, setParams2] = useState<TCOParams>(defaultParams);
+  const [activeModel, setActiveModel] = useState<1 | 2>(1);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card px-6 py-3 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-accent" />
         <h1 className="text-base font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
@@ -18,21 +19,20 @@ const Index = () => {
         <span className="text-xs text-muted-foreground ml-2">Calculator</span>
       </header>
 
-      {/* Three panels */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_2fr_3fr] h-[calc(100vh-3.25rem)]">
-        {/* Left: Inputs */}
         <div className="border-r bg-card overflow-hidden">
-          <InputPanel params={params} onChange={setParams} />
+          <InputPanel
+            params={activeModel === 1 ? params1 : params2}
+            onChange={activeModel === 1 ? setParams1 : setParams2}
+            activeModel={activeModel}
+            onModelChange={setActiveModel}
+          />
         </div>
-
-        {/* Center: Cost calculations (2/5) */}
         <div className="border-r overflow-auto">
-          <CostPanel params={params} />
+          <CostPanel params1={params1} params2={params2} activeModel={activeModel} />
         </div>
-
-        {/* Right: Crossover chart (3/5) */}
         <div className="overflow-hidden">
-          <CrossoverChart params={params} />
+          <CrossoverChart params1={params1} params2={params2} activeModel={activeModel} />
         </div>
       </div>
     </div>
