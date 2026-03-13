@@ -8,6 +8,12 @@ const Index = () => {
   const [params1, setParams1] = useState<TCOParams>(defaultParams);
   const [params2, setParams2] = useState<TCOParams>(defaultParams);
   const [activeModel, setActiveModel] = useState<1 | 2>(1);
+  const [model2Ever, setModel2Ever] = useState(false);
+
+  const handleModelChange = (m: 1 | 2) => {
+    if (m === 2) setModel2Ever(true);
+    setActiveModel(m);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,14 +31,14 @@ const Index = () => {
             params={activeModel === 1 ? params1 : params2}
             onChange={activeModel === 1 ? setParams1 : setParams2}
             activeModel={activeModel}
-            onModelChange={setActiveModel}
+            onModelChange={handleModelChange}
           />
         </div>
         <div className="border-r overflow-auto">
           <CostPanel params1={params1} params2={params2} activeModel={activeModel} />
         </div>
         <div className="overflow-hidden">
-          <CrossoverChart params1={params1} params2={params2} activeModel={activeModel} />
+          <CrossoverChart params1={params1} params2={params2} activeModel={activeModel} model2Ever={model2Ever} />
         </div>
       </div>
     </div>
