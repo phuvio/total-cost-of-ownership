@@ -147,22 +147,24 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
 
       <div className="flex gap-3 text-xs flex-wrap" style={{ fontFamily: 'var(--font-display)' }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.3)' }} />
-          <span className="text-muted-foreground">Training</span>
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.5)' }} />
+          <span className="text-muted-foreground">M1 Training</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.3)' }} />
-          <span className="text-muted-foreground">Inference</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-6 h-0 border-t-2 border-muted-foreground" />
-          <span className="text-muted-foreground">Model 1 (solid)</span>
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.5)' }} />
+          <span className="text-muted-foreground">M1 Inference</span>
         </div>
         {showBoth && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-0 border-t-2 border-dashed border-muted-foreground" />
-            <span className="text-muted-foreground">Model 2 (dotted)</span>
-          </div>
+          <>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(280, 65%, 55%, 0.5)' }} />
+              <span className="text-muted-foreground">M2 Training</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(45, 85%, 55%, 0.5)' }} />
+              <span className="text-muted-foreground">M2 Inference</span>
+            </div>
+          </>
         )}
       </div>
     </div>

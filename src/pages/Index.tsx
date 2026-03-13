@@ -35,7 +35,7 @@ const Index = () => {
           />
         </div>
         <div className="border-r overflow-auto">
-          <CostPanel params1={params1} params2={params2} activeModel={activeModel} />
+          <CostPanel params1={params1} params2={params2} activeModel={activeModel} model2Ever={model2Ever} />
         </div>
         <div className="overflow-hidden">
           <CrossoverChart params1={params1} params2={params2} activeModel={activeModel} model2Ever={model2Ever} />
