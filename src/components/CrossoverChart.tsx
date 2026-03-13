@@ -100,30 +100,30 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
             />
             <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
 
-            {/* Model 1: always solid lines */}
+            {/* Model 1: solid lines, red/green */}
             {isModel1Active ? (
               <>
-                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradActive)" strokeWidth={2} name="Model 1 Training" />
-                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradActive)" strokeWidth={2} name="Model 1 Inference" />
+                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradM1)" strokeWidth={2} name="M1 Training" />
+                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name="M1 Inference" />
               </>
             ) : (
               <>
-                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="Model 1 Training" />
-                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="Model 1 Inference" />
+                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Training" />
+                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Inference" />
               </>
             )}
 
-            {/* Model 2: always dotted lines */}
+            {/* Model 2: dotted lines, purple/amber */}
             {showBoth && (
               isModel1Active ? (
                 <>
-                  <Line type="monotone" dataKey="m2Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} strokeDasharray="8 4" dot={false} name="Model 2 Training" />
-                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} strokeDasharray="8 4" dot={false} name="Model 2 Inference" />
+                  <Line type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Training" />
+                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Inference" />
                 </>
               ) : (
                 <>
-                  <Area type="monotone" dataKey="m2Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradActive)" strokeWidth={2.5} strokeDasharray="8 4" name="Model 2 Training" />
-                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradActive)" strokeWidth={2.5} strokeDasharray="8 4" name="Model 2 Inference" />
+                  <Area type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" fill="url(#trainingGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Training" />
+                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Inference" />
                 </>
               )
             )}
