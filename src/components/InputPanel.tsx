@@ -67,6 +67,12 @@ export function InputPanel({ params, onChange, activeModel, onModelChange }: Pro
           Input Parameters
         </h2>
 
+        <Section title="Days" defaultOpen={true}>
+          <div className="param-grid">
+            {numField("Number of days", "days", "1")}
+          </div>
+        </Section>
+
         {/* Model Switcher */}
         <div className="param-section">
           <div className="flex items-center justify-between">
@@ -97,12 +103,6 @@ export function InputPanel({ params, onChange, activeModel, onModelChange }: Pro
             </div>
           </div>
         </div>
-
-        <Section title="Days" defaultOpen={true}>
-          <div className="param-grid">
-            {numField("Number of days", "days", "1")}
-          </div>
-        </Section>
 
         <Section title="Model Configuration" defaultOpen={true}>
           <div className="param-grid">
