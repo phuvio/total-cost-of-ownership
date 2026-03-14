@@ -1,4 +1,4 @@
-import { TCOParams } from "@/lib/tco-calculations";
+import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -201,6 +201,13 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {numField("Data preparation cost ($)", "dataPreparationCost", "1")}
           </div>
         </Section>
+        <button
+          onClick={() => onChange({ ...defaultParams, days: params.days })}
+          className="w-full mt-4 px-4 py-2 rounded text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Reset Parameters
+        </button>
       </div>
     </ScrollArea>
   );
