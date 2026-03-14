@@ -55,6 +55,7 @@ const Index = () => {
             model2Name={model2Name}
             onModel1NameChange={setModel1Name}
             onModel2NameChange={setModel2Name}
+            onReset={handleReset}
           />
         </div>
         <div className="border-r overflow-auto">

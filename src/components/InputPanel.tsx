@@ -203,7 +203,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
           </div>
         </Section>
         <button
-          onClick={() => { onChange({ ...defaultParams }); onDaysChange(defaultParams.days); onModelChange(1); }}
+          onClick={onReset}
           className="w-full mt-4 px-4 py-2 rounded text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
           style={{ fontFamily: 'var(--font-display)' }}
         >
