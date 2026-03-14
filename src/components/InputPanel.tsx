@@ -1,4 +1,4 @@
-import { TCOParams } from "@/lib/tco-calculations";
+import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
