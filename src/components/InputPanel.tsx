@@ -19,6 +19,7 @@ interface Props {
   model2Name: string;
   onModel1NameChange: (n: string) => void;
   onModel2NameChange: (n: string) => void;
+  onReset: () => void;
 }
 
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
