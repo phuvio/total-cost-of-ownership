@@ -28,33 +28,29 @@ function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnT
     : "Training costs dominate";
 
   return (
-    <div className={`space-y-4 ${highlight ? '' : 'opacity-75'}`}>
+    <div className={`space-y-3 ${highlight ? '' : 'opacity-75'}`}>
       <h3 className="text-xs font-bold uppercase tracking-widest text-primary" style={{ fontFamily: 'var(--font-display)' }}>
         {label}
       </h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="metric-card col-span-2">
-          <div className="metric-value text-foreground">{days}</div>
-          <div className="metric-label">Number of Days</div>
-        </div>
+      <div className="grid grid-cols-2 gap-3">
         <div className="metric-card">
-          <div className="metric-value text-foreground">{fmt(r.trainingCost)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.trainingCost)}</div>
           <div className="metric-label">Training Cost</div>
         </div>
         <div className="metric-card">
-          <div className="metric-value text-foreground">{fmt(r.inferencePerRequest)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.inferencePerRequest)}</div>
           <div className="metric-label">Inference Cost / Request</div>
         </div>
         <div className="metric-card">
-          <div className="metric-value text-foreground">{fmt(inferencePer10k)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(inferencePer10k)}</div>
           <div className="metric-label">Inference Cost / 10,000 Req</div>
         </div>
         <div className="metric-card">
-          <div className="metric-value text-foreground">{fmtNum(r.requestsPerDay)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmtNum(r.requestsPerDay)}</div>
           <div className="metric-label">Requests per Day</div>
         </div>
         <div className="metric-card col-span-2">
-          <div className="metric-value text-foreground">{fmt(r.annualInference)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.annualInference)}</div>
           <div className="metric-label">Total Inference Cost ({days} days)</div>
         </div>
       </div>
@@ -86,6 +82,7 @@ function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnT
 export function CostPanel({ params1, params2, activeModel, model2Ever, model1Name, model2Name }: Props) {
   const r1 = calculateTCO(params1);
   const r2 = calculateTCO(params2);
+  const days = params1.days;
 
   return (
     <div className="p-6 space-y-6">
@@ -93,12 +90,17 @@ export function CostPanel({ params1, params2, activeModel, model2Ever, model1Nam
         Cost Calculations
       </h2>
 
-      <ModelResults label={model1Name} r={r1} days={params1.days} highlight={activeModel === 1} />
+      <div className="metric-card">
+        <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{days}</div>
+        <div className="metric-label">Number of Days</div>
+      </div>
+
+      <ModelResults label={model1Name} r={r1} days={days} highlight={activeModel === 1} />
 
       {model2Ever && (
         <>
           <div className="border-t my-4" />
-          <ModelResults label={model2Name} r={r2} days={params2.days} highlight={activeModel === 2} />
+          <ModelResults label={model2Name} r={r2} days={days} highlight={activeModel === 2} />
         </>
       )}
     </div>
