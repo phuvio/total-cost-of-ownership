@@ -40,7 +40,7 @@ function Section({ title, children, defaultOpen = false }: { title: string; chil
   );
 }
 
-export function InputPanel({ params, onChange, activeModel, onModelChange, days, onDaysChange, model1Name, model2Name, onModel1NameChange, onModel2NameChange }: Props) {
+export function InputPanel({ params, onChange, activeModel, onModelChange, days, onDaysChange, model1Name, model2Name, onModel1NameChange, onModel2NameChange, onReset }: Props) {
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
