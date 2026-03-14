@@ -19,6 +19,7 @@ interface Props {
   model2Name: string;
   onModel1NameChange: (n: string) => void;
   onModel2NameChange: (n: string) => void;
+  onReset: () => void;
 }
 
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -39,7 +40,7 @@ function Section({ title, children, defaultOpen = false }: { title: string; chil
   );
 }
 
-export function InputPanel({ params, onChange, activeModel, onModelChange, days, onDaysChange, model1Name, model2Name, onModel1NameChange, onModel2NameChange }: Props) {
+export function InputPanel({ params, onChange, activeModel, onModelChange, days, onDaysChange, model1Name, model2Name, onModel1NameChange, onModel2NameChange, onReset }: Props) {
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
@@ -202,7 +203,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
           </div>
         </Section>
         <button
-          onClick={() => { onChange({ ...defaultParams }); onDaysChange(defaultParams.days); onModelChange(1); }}
+          onClick={onReset}
           className="w-full mt-4 px-4 py-2 rounded text-sm font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
           style={{ fontFamily: 'var(--font-display)' }}
         >

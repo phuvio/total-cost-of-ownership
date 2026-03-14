@@ -18,6 +18,16 @@ const Index = () => {
     setActiveModel(m);
   };
 
+  const handleReset = () => {
+    setParams1({ ...defaultParams });
+    setParams2({ ...defaultParams });
+    setDays(defaultParams.days);
+    setActiveModel(1);
+    setModel2Ever(false);
+    setModel1Name("Model 1");
+    setModel2Name("Model 2");
+  };
+
   // Merge shared days into params
   const p1 = { ...params1, days };
   const p2 = { ...params2, days };
@@ -45,6 +55,7 @@ const Index = () => {
             model2Name={model2Name}
             onModel1NameChange={setModel1Name}
             onModel2NameChange={setModel2Name}
+            onReset={handleReset}
           />
         </div>
         <div className="border-r overflow-auto">
