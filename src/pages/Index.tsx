@@ -5,15 +5,22 @@ import { CostPanel } from "@/components/CostPanel";
 import { CrossoverChart } from "@/components/CrossoverChart";
 
 const Index = () => {
+  const [days, setDays] = useState(defaultParams.days);
   const [params1, setParams1] = useState<TCOParams>(defaultParams);
   const [params2, setParams2] = useState<TCOParams>(defaultParams);
   const [activeModel, setActiveModel] = useState<1 | 2>(1);
   const [model2Ever, setModel2Ever] = useState(false);
+  const [model1Name, setModel1Name] = useState("Model 1");
+  const [model2Name, setModel2Name] = useState("Model 2");
 
   const handleModelChange = (m: 1 | 2) => {
     if (m === 2) setModel2Ever(true);
     setActiveModel(m);
   };
+
+  // Merge shared days into params
+  const p1 = { ...params1, days };
+  const p2 = { ...params2, days };
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,13 +39,19 @@ const Index = () => {
             onChange={activeModel === 1 ? setParams1 : setParams2}
             activeModel={activeModel}
             onModelChange={handleModelChange}
+            days={days}
+            onDaysChange={setDays}
+            model1Name={model1Name}
+            model2Name={model2Name}
+            onModel1NameChange={setModel1Name}
+            onModel2NameChange={setModel2Name}
           />
         </div>
         <div className="border-r overflow-auto">
-          <CostPanel params1={params1} params2={params2} activeModel={activeModel} model2Ever={model2Ever} />
+          <CostPanel params1={p1} params2={p2} activeModel={activeModel} model2Ever={model2Ever} model1Name={model1Name} model2Name={model2Name} />
         </div>
         <div className="overflow-hidden">
-          <CrossoverChart params1={params1} params2={params2} activeModel={activeModel} model2Ever={model2Ever} />
+          <CrossoverChart params1={p1} params2={p2} activeModel={activeModel} model2Ever={model2Ever} model1Name={model1Name} model2Name={model2Name} />
         </div>
       </div>
     </div>

@@ -6,6 +6,8 @@ interface Props {
   params2: TCOParams;
   activeModel: 1 | 2;
   model2Ever: boolean;
+  model1Name: string;
+  model2Name: string;
 }
 
 function fmtAxis(n: number): string {
@@ -14,26 +16,21 @@ function fmtAxis(n: number): string {
   return `$${n.toFixed(0)}`;
 }
 
-export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Props) {
+export function CrossoverChart({ params1, params2, activeModel, model2Ever, model1Name, model2Name }: Props) {
   const data1 = generateChartData(params1);
   const data2 = generateChartData(params2);
 
   const showBoth = model2Ever;
-
-  // Model 1 is always solid, Model 2 is always dotted
   const activeData = activeModel === 1 ? data1 : data2;
-  const bgData = activeModel === 1 ? data2 : data1;
 
-  const maxDays = Math.max(params1.days, params2.days);
+  const maxDays = params1.days; // shared days
   const step = Math.max(1, Math.floor(maxDays / 100));
   const mergedPoints: Array<Record<string, number>> = [];
 
   for (let d = 0; d <= maxDays; d += step) {
     const point: Record<string, number> = { day: d };
-    // Model 1 data
     point.m1Training = data1.results.trainingCost;
     point.m1Inference = data1.results.dailyInference * d;
-    // Model 2 data
     if (showBoth) {
       point.m2Training = data2.results.trainingCost;
       point.m2Inference = data2.results.dailyInference * d;
@@ -41,10 +38,9 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
     mergedPoints.push(point);
   }
 
-  const activeCrossover = activeData.crossoverDays < (activeModel === 1 ? params1.days : params2.days)
+  const activeCrossover = activeData.crossoverDays < maxDays
     ? Math.round(activeData.crossoverDays) : null;
 
-  // Active model gets area fill, background model gets lines only
   const isModel1Active = activeModel === 1;
 
   return (
@@ -88,10 +84,10 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
             <Tooltip
               formatter={(v: number, name: string) => {
                 const labels: Record<string, string> = {
-                  m1Training: 'Model 1 Training',
-                  m1Inference: 'Model 1 Inference',
-                  m2Training: 'Model 2 Training',
-                  m2Inference: 'Model 2 Inference',
+                  m1Training: `${model1Name} Training`,
+                  m1Inference: `${model1Name} Inference`,
+                  m2Training: `${model2Name} Training`,
+                  m2Inference: `${model2Name} Inference`,
                 };
                 return [fmtAxis(v), labels[name] || name];
               }}
@@ -100,30 +96,28 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
             />
             <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
 
-            {/* Model 1: solid lines, red/green */}
             {isModel1Active ? (
               <>
-                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradM1)" strokeWidth={2} name="M1 Training" />
-                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name="M1 Inference" />
+                <Area type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" fill="url(#trainingGradM1)" strokeWidth={2} name={`${model1Name} Training`} />
+                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name={`${model1Name} Inference`} />
               </>
             ) : (
               <>
-                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Training" />
-                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name="M1 Inference" />
+                <Line type="monotone" dataKey="m1Training" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name={`${model1Name} Training`} />
+                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name={`${model1Name} Inference`} />
               </>
             )}
 
-            {/* Model 2: dotted lines, purple/amber */}
             {showBoth && (
               isModel1Active ? (
                 <>
-                  <Line type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Training" />
-                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name="M2 Inference" />
+                  <Line type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name={`${model2Name} Training`} />
+                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name={`${model2Name} Inference`} />
                 </>
               ) : (
                 <>
-                  <Area type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" fill="url(#trainingGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Training" />
-                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name="M2 Inference" />
+                  <Area type="monotone" dataKey="m2Training" stroke="hsl(280, 65%, 55%)" fill="url(#trainingGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Training`} />
+                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Inference`} />
                 </>
               )
             )}
@@ -148,21 +142,21 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever }: Pr
       <div className="flex gap-3 text-xs flex-wrap" style={{ fontFamily: 'var(--font-display)' }}>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.5)' }} />
-          <span className="text-muted-foreground">M1 Training</span>
+          <span className="text-muted-foreground">{model1Name} Training</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.5)' }} />
-          <span className="text-muted-foreground">M1 Inference</span>
+          <span className="text-muted-foreground">{model1Name} Inference</span>
         </div>
         {showBoth && (
           <>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded" style={{ background: 'hsl(280, 65%, 55%, 0.5)' }} />
-              <span className="text-muted-foreground">M2 Training</span>
+              <span className="text-muted-foreground">{model2Name} Training</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded" style={{ background: 'hsl(45, 85%, 55%, 0.5)' }} />
-              <span className="text-muted-foreground">M2 Inference</span>
+              <span className="text-muted-foreground">{model2Name} Inference</span>
             </div>
           </>
         )}

@@ -13,6 +13,12 @@ interface Props {
   onChange: (p: TCOParams) => void;
   activeModel: 1 | 2;
   onModelChange: (m: 1 | 2) => void;
+  days: number;
+  onDaysChange: (d: number) => void;
+  model1Name: string;
+  model2Name: string;
+  onModel1NameChange: (n: string) => void;
+  onModel2NameChange: (n: string) => void;
 }
 
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
@@ -33,7 +39,7 @@ function Section({ title, children, defaultOpen = false }: { title: string; chil
   );
 }
 
-export function InputPanel({ params, onChange, activeModel, onModelChange }: Props) {
+export function InputPanel({ params, onChange, activeModel, onModelChange, days, onDaysChange, model1Name, model2Name, onModel1NameChange, onModel2NameChange }: Props) {
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
@@ -69,7 +75,16 @@ export function InputPanel({ params, onChange, activeModel, onModelChange }: Pro
 
         <Section title="Days" defaultOpen={true}>
           <div className="param-grid">
-            {numField("Number of days", "days", "1")}
+            <div className="grid grid-cols-2 items-center gap-2">
+              <Label className="param-label">Number of days</Label>
+              <Input
+                type="number"
+                className="param-input"
+                value={days}
+                step="1"
+                onChange={(e) => onDaysChange(parseFloat(e.target.value) || 0)}
+              />
+            </div>
           </div>
         </Section>
 
@@ -87,7 +102,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange }: Pro
                 }`}
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                Model 1
+                {model1Name}
               </button>
               <button
                 onClick={() => onModelChange(2)}
@@ -98,9 +113,23 @@ export function InputPanel({ params, onChange, activeModel, onModelChange }: Pro
                 }`}
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                Model 2
+                {model2Name}
               </button>
             </div>
+          </div>
+          {/* Editable model name */}
+          <div className="mt-3 grid grid-cols-2 items-center gap-2">
+            <Label className="param-label">Rename</Label>
+            <Input
+              type="text"
+              className="param-input"
+              value={activeModel === 1 ? model1Name : model2Name}
+              onChange={(e) =>
+                activeModel === 1
+                  ? onModel1NameChange(e.target.value)
+                  : onModel2NameChange(e.target.value)
+              }
+            />
           </div>
         </div>
 
