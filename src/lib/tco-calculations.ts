@@ -128,8 +128,7 @@ export function calculateTCO(p: TCOParams) {
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
   const cEngineering = p.engineeringHours * p.costPerHour;
   const fineTuningExtra = p.fineTuning ? p.fineTuningCostOpt : 0;
-  const hwOptExtra = p.hardwareOptimization ? p.hwOptimizationCost : 0;
-  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + fineTuningExtra + hwOptExtra;
+  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + fineTuningExtra + p.hardwareCost;
 
   // Period inference
   const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;

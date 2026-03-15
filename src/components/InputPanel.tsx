@@ -211,6 +211,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {numField("GPU price ($/hr)", "gpuPrice", "0.1")}
             {numField("Fine-tuning cost ($)", "finetuningCost", "1")}
             {numField("Data preparation cost ($)", "dataPreparationCost", "1")}
+            {numField("Hardware costs ($)", "hardwareCost", "1")}
           </div>
         </Section>
         <button
