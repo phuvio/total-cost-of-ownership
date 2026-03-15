@@ -122,7 +122,7 @@ export function calculateTCO(p: TCOParams) {
   
   const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
 
-  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * hwEfficiencyFactor * specDecodingFactor;
+  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * specDecodingFactor;
 
   // Training costs
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
