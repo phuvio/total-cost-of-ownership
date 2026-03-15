@@ -119,7 +119,7 @@ export function calculateTCO(p: TCOParams) {
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
   const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
   const fineTuningTokenFactor = p.fineTuning ? (1 - p.fineTuningTokenReduction / 100) : 1;
-  const hwEfficiencyFactor = p.hardwareOptimization ? (1 - p.hwEfficiencyGain / 100) : 1;
+  
   const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
 
   const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * hwEfficiencyFactor * specDecodingFactor;
