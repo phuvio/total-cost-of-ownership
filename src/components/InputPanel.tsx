@@ -57,12 +57,13 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
     </div>
   );
 
-  const toggle = (label: string, key: keyof TCOParams) => (
-    <div className="flex items-center justify-between">
+  const toggle = (label: string, key: keyof TCOParams, disabled = false) => (
+    <div className={`flex items-center justify-between ${disabled ? 'opacity-50' : ''}`}>
       <Label className="param-label">{label}</Label>
       <Switch
         checked={params[key] as boolean}
         onCheckedChange={(v) => set(key, v as TCOParams[typeof key])}
+        disabled={disabled}
       />
     </div>
   );
