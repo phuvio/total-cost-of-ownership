@@ -186,6 +186,9 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Quantization", "quantization", params.modelType === 'api')}
             {toggle("Batching", "batching")}
             {toggle("Prompt Compression", "promptCompression")}
+            {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
+            {toggle("Hardware-level Optimization", "hardwareOptimization", params.modelType === 'api')}
+            {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {numField("Cache hit rate (%)", "cacheHitRate", "1")}
             {numField("Routing share (%)", "routingShare", "1")}
             {numField("Batch size", "batchSize", "1")}

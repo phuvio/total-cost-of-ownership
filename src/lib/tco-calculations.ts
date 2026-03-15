@@ -27,6 +27,9 @@ export interface TCOParams {
   quantization: boolean;
   batching: boolean;
   promptCompression: boolean;
+  fineTuning: boolean;
+  hardwareOptimization: boolean;
+  speculativeDecoding: boolean;
   cacheHitRate: number;
   routingShare: number;
   batchSize: number;
@@ -64,6 +67,9 @@ export const defaultParams: TCOParams = {
   quantization: false,
   batching: false,
   promptCompression: false,
+  fineTuning: false,
+  hardwareOptimization: false,
+  speculativeDecoding: false,
   cacheHitRate: 30,
   routingShare: 20,
   batchSize: 4,
