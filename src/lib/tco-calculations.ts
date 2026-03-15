@@ -121,14 +121,19 @@ export function calculateTCO(p: TCOParams) {
   const routingFactor = p.modelRouting ? (1 - p.routingShare / 200) : 1;
   const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
-  const quantFactor = p.quantization ? 0.85 : 1;
+  const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
+  const fineTuningTokenFactor = p.fineTuning ? (1 - p.fineTuningTokenReduction / 100) : 1;
+  const hwEfficiencyFactor = p.hardwareOptimization ? (1 - p.hwEfficiencyGain / 100) : 1;
+  const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
 
-  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor;
+  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * hwEfficiencyFactor * specDecodingFactor;
 
   // Training costs
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
   const cEngineering = p.engineeringHours * p.costPerHour;
-  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost;
+  const fineTuningExtra = p.fineTuning ? p.fineTuningCostOpt : 0;
+  const hwOptExtra = p.hardwareOptimization ? p.hwOptimizationCost : 0;
+  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + fineTuningExtra + hwOptExtra;
 
   // Period inference
   const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;

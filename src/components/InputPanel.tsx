@@ -186,13 +186,27 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Model Routing", "modelRouting")}
             {params.modelRouting && numField("Routing share (%)", "routingShare", "1")}
             {toggle("Quantization", "quantization", params.modelType === 'api')}
+            {params.quantization && params.modelType !== 'api' && numField("Size reduction (%)", "sizeReduction", "1")}
             {toggle("Batching", "batching")}
             {params.batching && numField("Batch size", "batchSize", "1")}
             {toggle("Prompt Compression", "promptCompression")}
             {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
             {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
+            {params.fineTuning && params.modelType !== 'api' && (
+              <>
+                {numField("Fine-tuning cost ($)", "fineTuningCostOpt", "1")}
+                {numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
+              </>
+            )}
             {toggle("Hardware-level Optimization", "hardwareOptimization", params.modelType === 'api')}
+            {params.hardwareOptimization && params.modelType !== 'api' && (
+              <>
+                {numField("Optimization cost ($)", "hwOptimizationCost", "1")}
+                {numField("Increased efficiency (%)", "hwEfficiencyGain", "1")}
+              </>
+            )}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
+            {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
           </div>
         </Section>
 
