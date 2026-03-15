@@ -59,7 +59,7 @@ export const defaultParams: TCOParams = {
   toolCalls: false,
   embeddingCostPerReq: 0.0001,
   rerankerCostPerReq: 0.0005,
-  caching: true,
+  caching: false,
   modelRouting: false,
   quantization: false,
   batching: false,
