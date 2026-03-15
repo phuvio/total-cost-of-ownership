@@ -182,17 +182,17 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
         <Section title="Optimization Toggles">
           <div className="param-grid space-y-1">
             {toggle("Caching", "caching")}
+            {params.caching && numField("Cache hit rate (%)", "cacheHitRate", "1")}
             {toggle("Model Routing", "modelRouting")}
+            {params.modelRouting && numField("Routing share (%)", "routingShare", "1")}
             {toggle("Quantization", "quantization", params.modelType === 'api')}
             {toggle("Batching", "batching")}
+            {params.batching && numField("Batch size", "batchSize", "1")}
             {toggle("Prompt Compression", "promptCompression")}
+            {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
             {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
             {toggle("Hardware-level Optimization", "hardwareOptimization", params.modelType === 'api')}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
-            {numField("Cache hit rate (%)", "cacheHitRate", "1")}
-            {numField("Routing share (%)", "routingShare", "1")}
-            {numField("Batch size", "batchSize", "1")}
-            {numField("Token reduction (%)", "tokenReduction", "1")}
           </div>
         </Section>
 
