@@ -183,7 +183,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
           <div className="param-grid space-y-1">
             {toggle("Caching", "caching")}
             {toggle("Model Routing", "modelRouting")}
-            {toggle("Quantization", "quantization")}
+            {toggle("Quantization", "quantization", params.modelType === 'api')}
             {toggle("Batching", "batching")}
             {toggle("Prompt Compression", "promptCompression")}
             {numField("Cache hit rate (%)", "cacheHitRate", "1")}
