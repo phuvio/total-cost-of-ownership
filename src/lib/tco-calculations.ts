@@ -36,9 +36,8 @@ export interface TCOParams {
   sizeReduction: number;
   fineTuningCostOpt: number;
   fineTuningTokenReduction: number;
-  hwOptimizationCost: number;
-  hwEfficiencyGain: number;
   specDecodingReduction: number;
+  hardwareCost: number;
   // Dev costs
   engineeringHours: number;
   costPerHour: number;
