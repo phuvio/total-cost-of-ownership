@@ -28,7 +28,6 @@ export interface TCOParams {
   batching: boolean;
   promptCompression: boolean;
   fineTuning: boolean;
-  hardwareOptimization: boolean;
   speculativeDecoding: boolean;
   cacheHitRate: number;
   routingShare: number;
