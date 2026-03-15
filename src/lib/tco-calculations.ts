@@ -34,6 +34,12 @@ export interface TCOParams {
   routingShare: number;
   batchSize: number;
   tokenReduction: number;
+  sizeReduction: number;
+  fineTuningCostOpt: number;
+  fineTuningTokenReduction: number;
+  hwOptimizationCost: number;
+  hwEfficiencyGain: number;
+  specDecodingReduction: number;
   // Dev costs
   engineeringHours: number;
   costPerHour: number;
