@@ -28,7 +28,6 @@ export interface TCOParams {
   batching: boolean;
   promptCompression: boolean;
   fineTuning: boolean;
-  hardwareOptimization: boolean;
   speculativeDecoding: boolean;
   cacheHitRate: number;
   routingShare: number;
@@ -37,9 +36,8 @@ export interface TCOParams {
   sizeReduction: number;
   fineTuningCostOpt: number;
   fineTuningTokenReduction: number;
-  hwOptimizationCost: number;
-  hwEfficiencyGain: number;
   specDecodingReduction: number;
+  hardwareCost: number;
   // Dev costs
   engineeringHours: number;
   costPerHour: number;
@@ -74,7 +72,6 @@ export const defaultParams: TCOParams = {
   batching: false,
   promptCompression: false,
   fineTuning: false,
-  hardwareOptimization: false,
   speculativeDecoding: false,
   cacheHitRate: 30,
   routingShare: 20,
@@ -83,9 +80,8 @@ export const defaultParams: TCOParams = {
   sizeReduction: 25,
   fineTuningCostOpt: 5000,
   fineTuningTokenReduction: 15,
-  hwOptimizationCost: 10000,
-  hwEfficiencyGain: 20,
   specDecodingReduction: 30,
+  hardwareCost: 0,
   engineeringHours: 500,
   costPerHour: 150,
   trainingGpuHours: 100,
@@ -123,17 +119,16 @@ export function calculateTCO(p: TCOParams) {
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
   const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
   const fineTuningTokenFactor = p.fineTuning ? (1 - p.fineTuningTokenReduction / 100) : 1;
-  const hwEfficiencyFactor = p.hardwareOptimization ? (1 - p.hwEfficiencyGain / 100) : 1;
+  
   const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
 
-  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * hwEfficiencyFactor * specDecodingFactor;
+  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * specDecodingFactor;
 
   // Training costs
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
   const cEngineering = p.engineeringHours * p.costPerHour;
   const fineTuningExtra = p.fineTuning ? p.fineTuningCostOpt : 0;
-  const hwOptExtra = p.hardwareOptimization ? p.hwOptimizationCost : 0;
-  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + fineTuningExtra + hwOptExtra;
+  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + fineTuningExtra + p.hardwareCost;
 
   // Period inference
   const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;
