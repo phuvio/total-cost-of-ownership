@@ -198,13 +198,6 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
                 {numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
               </>
             )}
-            {toggle("Hardware-level Optimization", "hardwareOptimization", params.modelType === 'api')}
-            {params.hardwareOptimization && params.modelType !== 'api' && (
-              <>
-                {numField("Optimization cost ($)", "hwOptimizationCost", "1")}
-                {numField("Increased efficiency (%)", "hwEfficiencyGain", "1")}
-              </>
-            )}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
           </div>
