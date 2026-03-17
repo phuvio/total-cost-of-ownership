@@ -150,8 +150,8 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
                 </SelectContent>
               </Select>
             </div>
-            {numField("Input token price ($/tok)", "inputTokenPrice", "0.000001")}
-            {numField("Output token price ($/tok)", "outputTokenPrice", "0.000001")}
+            {numField("Input token price (€/tok)", "inputTokenPrice", "0.000001")}
+            {numField("Output token price (€/tok)", "outputTokenPrice", "0.000001")}
             {numField("Context length", "contextLength", "1")}
             {numField("Response length", "responseLength", "1")}
           </div>
