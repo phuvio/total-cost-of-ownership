@@ -82,12 +82,12 @@ export const defaultParams: TCOParams = {
   fineTuningTokenReduction: 15,
   specDecodingReduction: 30,
   hardwareCost: 0,
-  engineeringHours: 500,
+  engineeringHours: 10,
   costPerHour: 150,
-  trainingGpuHours: 100,
+  trainingGpuHours: 0,
   gpuPrice: 3.5,
   finetuningCost: 0,
-  dataPreparationCost: 10000,
+  dataPreparationCost: 0,
 };
 
 export function calculateTCO(p: TCOParams) {
