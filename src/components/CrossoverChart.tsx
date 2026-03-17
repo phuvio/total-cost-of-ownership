@@ -11,9 +11,9 @@ interface Props {
 }
 
 function fmtAxis(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
-  return `$${n.toFixed(0)}`;
+  if (n >= 1_000_000) return `€${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `€${(n / 1_000).toFixed(0)}k`;
+  return `€${n.toFixed(0)}`;
 }
 
 export function CrossoverChart({ params1, params2, activeModel, model2Ever, model1Name, model2Name }: Props) {
