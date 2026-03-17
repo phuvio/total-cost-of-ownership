@@ -71,7 +71,7 @@ export const defaultParams: TCOParams = {
   quantization: false,
   batching: false,
   promptCompression: false,
-  fineTuning: false,
+  fineTuningReduction: false,
   speculativeDecoding: false,
   cacheHitRate: 30,
   routingShare: 20,
