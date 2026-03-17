@@ -86,7 +86,7 @@ export const defaultParams: TCOParams = {
   costPerHour: 150,
   trainingGpuHours: 100,
   gpuPrice: 3.5,
-  finetuningCost: 5000,
+  finetuningCost: 0,
   dataPreparationCost: 10000,
 };
 

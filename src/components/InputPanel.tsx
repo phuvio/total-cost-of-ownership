@@ -150,8 +150,8 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
                 </SelectContent>
               </Select>
             </div>
-            {numField("Input token price ($/tok)", "inputTokenPrice", "0.000001")}
-            {numField("Output token price ($/tok)", "outputTokenPrice", "0.000001")}
+            {numField("Input token price (€/tok)", "inputTokenPrice", "0.000001")}
+            {numField("Output token price (€/tok)", "outputTokenPrice", "0.000001")}
             {numField("Context length", "contextLength", "1")}
             {numField("Response length", "responseLength", "1")}
           </div>
@@ -174,8 +174,8 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Moderation Model", "moderationModel")}
             {toggle("Guardrails", "guardrails")}
             {toggle("Tool Calls", "toolCalls")}
-            {numField("Embedding cost / req ($)", "embeddingCostPerReq", "0.0001")}
-            {numField("Reranker cost / req ($)", "rerankerCostPerReq", "0.0001")}
+            {numField("Embedding cost / req (€)", "embeddingCostPerReq", "0.0001")}
+            {numField("Reranker cost / req (€)", "rerankerCostPerReq", "0.0001")}
           </div>
         </Section>
 
@@ -192,12 +192,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Prompt Compression", "promptCompression")}
             {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
             {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
-            {params.fineTuning && params.modelType !== 'api' && (
-              <>
-                {numField("Fine-tuning cost ($)", "fineTuningCostOpt", "1")}
-                {numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
-              </>
-            )}
+            {params.fineTuning && params.modelType !== 'api' && numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
           </div>
@@ -206,12 +201,12 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
         <Section title="Development Cost">
           <div className="param-grid">
             {numField("Engineering hours", "engineeringHours", "1")}
-            {numField("Cost per hour ($/hr)", "costPerHour", "1")}
+            {numField("Cost per hour (€/hr)", "costPerHour", "1")}
             {numField("Training GPU hours", "trainingGpuHours", "1")}
-            {numField("GPU price ($/hr)", "gpuPrice", "0.1")}
-            {numField("Fine-tuning cost ($)", "finetuningCost", "1")}
-            {numField("Data preparation cost ($)", "dataPreparationCost", "1")}
-            {numField("Hardware costs ($)", "hardwareCost", "1")}
+            {numField("GPU price (€/hr)", "gpuPrice", "0.1")}
+            {numField("Fine-tuning cost (€)", "finetuningCost", "1")}
+            {numField("Data preparation cost (€)", "dataPreparationCost", "1")}
+            {numField("Hardware costs (€)", "hardwareCost", "1")}
           </div>
         </Section>
         <button
