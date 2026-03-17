@@ -201,12 +201,12 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
         <Section title="Development Cost">
           <div className="param-grid">
             {numField("Engineering hours", "engineeringHours", "1")}
-            {numField("Cost per hour ($/hr)", "costPerHour", "1")}
+            {numField("Cost per hour (€/hr)", "costPerHour", "1")}
             {numField("Training GPU hours", "trainingGpuHours", "1")}
-            {numField("GPU price ($/hr)", "gpuPrice", "0.1")}
-            {numField("Fine-tuning cost ($)", "finetuningCost", "1")}
-            {numField("Data preparation cost ($)", "dataPreparationCost", "1")}
-            {numField("Hardware costs ($)", "hardwareCost", "1")}
+            {numField("GPU price (€/hr)", "gpuPrice", "0.1")}
+            {numField("Fine-tuning cost (€)", "finetuningCost", "1")}
+            {numField("Data preparation cost (€)", "dataPreparationCost", "1")}
+            {numField("Hardware costs (€)", "hardwareCost", "1")}
           </div>
         </Section>
         <button
