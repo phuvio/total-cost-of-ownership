@@ -192,12 +192,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Prompt Compression", "promptCompression")}
             {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
             {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
-            {params.fineTuning && params.modelType !== 'api' && (
-              <>
-                {numField("Fine-tuning cost ($)", "fineTuningCostOpt", "1")}
-                {numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
-              </>
-            )}
+            {params.fineTuning && params.modelType !== 'api' && numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
           </div>
