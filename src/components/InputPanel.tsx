@@ -174,8 +174,8 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {toggle("Moderation Model", "moderationModel")}
             {toggle("Guardrails", "guardrails")}
             {toggle("Tool Calls", "toolCalls")}
-            {numField("Embedding cost / req ($)", "embeddingCostPerReq", "0.0001")}
-            {numField("Reranker cost / req ($)", "rerankerCostPerReq", "0.0001")}
+            {numField("Embedding cost / req (€)", "embeddingCostPerReq", "0.0001")}
+            {numField("Reranker cost / req (€)", "rerankerCostPerReq", "0.0001")}
           </div>
         </Section>
 
