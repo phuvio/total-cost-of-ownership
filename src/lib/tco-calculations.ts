@@ -27,7 +27,7 @@ export interface TCOParams {
   quantization: boolean;
   batching: boolean;
   promptCompression: boolean;
-  fineTuning: boolean;
+  fineTuningReduction: boolean;
   speculativeDecoding: boolean;
   cacheHitRate: number;
   routingShare: number;
@@ -71,7 +71,7 @@ export const defaultParams: TCOParams = {
   quantization: false,
   batching: false,
   promptCompression: false,
-  fineTuning: false,
+  fineTuningReduction: false,
   speculativeDecoding: false,
   cacheHitRate: 30,
   routingShare: 20,
@@ -118,7 +118,7 @@ export function calculateTCO(p: TCOParams) {
   const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
   const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
-  const fineTuningTokenFactor = p.fineTuning ? (1 - p.fineTuningTokenReduction / 100) : 1;
+  const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
   
   const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
 

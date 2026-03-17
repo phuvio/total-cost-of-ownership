@@ -209,8 +209,8 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
             {params.batching && numField("Batch size", "batchSize", "1")}
             {toggle("Prompt Compression", "promptCompression")}
             {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
-            {toggle("Fine-tuning", "fineTuning", params.modelType === 'api')}
-            {params.fineTuning && params.modelType !== 'api' && numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
+            {toggle("Fine-tuning", "fineTuningReduction", params.modelType === 'api')}
+            {params.fineTuningReduction && params.modelType !== 'api' && numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
           </div>
