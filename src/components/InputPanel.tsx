@@ -139,7 +139,25 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
           <div className="param-grid">
             <div className="grid grid-cols-2 items-center gap-2">
               <Label className="param-label">Model Type</Label>
-              <Select value={params.modelType} onValueChange={(v) => set('modelType', v as TCOParams['modelType'])}>
+              <Select value={params.modelType} onValueChange={(v) => {
+                const modelType = v as TCOParams['modelType'];
+                const engineeringDefaults: Record<string, number> = {
+                  'api': 10,
+                  'cloud': 100,
+                  'self-hosted': 500,
+                };
+                onChange({
+                  ...params,
+                  modelType,
+                  engineeringHours: engineeringDefaults[modelType] ?? params.engineeringHours,
+                  costPerHour: 150,
+                  trainingGpuHours: 0,
+                  gpuPrice: 3.5,
+                  finetuningCost: 0,
+                  dataPreparationCost: 0,
+                  hardwareCost: 0,
+                });
+              }}>
                 <SelectTrigger className="param-input">
                   <SelectValue />
                 </SelectTrigger>
