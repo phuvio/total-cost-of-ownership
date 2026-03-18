@@ -9,7 +9,7 @@ const Index = () => {
   const [params1, setParams1] = useState<TCOParams>(defaultParams);
   const [params2, setParams2] = useState<TCOParams>(defaultParams);
   const [activeModel, setActiveModel] = useState<1 | 2>(1);
-  const [model2Ever, setModel2Ever] = useState(false);
+  const [model2Ever, setModel2Ever] = useState(true);
   const [model1Name, setModel1Name] = useState("Model 1");
   const [model2Name, setModel2Name] = useState("Model 2");
 
