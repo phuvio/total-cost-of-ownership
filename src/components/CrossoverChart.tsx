@@ -73,13 +73,13 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
             <XAxis
               dataKey="day"
-              tick={{ fontSize: 10, fontFamily: 'var(--font-display)' }}
-              label={{ value: 'Days', position: 'insideBottom', offset: -5, style: { fontSize: 10, fontFamily: 'var(--font-display)' } }}
+              tick={{ fontSize: 12, fontFamily: 'var(--font-display)' }}
+              label={{ value: 'Days', position: 'insideBottom', offset: -5, style: { fontSize: 12, fontFamily: 'var(--font-display)' } }}
             />
             <YAxis
               tickFormatter={fmtAxis}
-              tick={{ fontSize: 10, fontFamily: 'var(--font-display)' }}
-              label={{ value: 'Cost (€)', angle: -90, position: 'insideLeft', style: { fontSize: 10, fontFamily: 'var(--font-display)' } }}
+              tick={{ fontSize: 12, fontFamily: 'var(--font-display)' }}
+              label={{ value: 'Cost (€)', angle: -90, position: 'insideLeft', style: { fontSize: 12, fontFamily: 'var(--font-display)' } }}
             />
             <Tooltip
               formatter={(v: number, name: string) => {
