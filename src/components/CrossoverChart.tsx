@@ -71,6 +71,8 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
             <XAxis
               dataKey="day"
+              type="number"
+              domain={[0, maxDays]}
               tick={{ fontSize: 12, fontFamily: 'var(--font-display)' }}
               label={{ value: 'Days', position: 'insideBottom', offset: -5, style: { fontSize: 12, fontFamily: 'var(--font-display)' } }}
             />
