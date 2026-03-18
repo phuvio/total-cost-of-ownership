@@ -23,7 +23,7 @@ const Index = () => {
     setParams2({ ...defaultParams });
     setDays(defaultParams.days);
     setActiveModel(1);
-    setModel2Ever(false);
+    setModel2Ever(true);
     setModel1Name("Model 1");
     setModel2Name("Model 2");
   };
