@@ -94,7 +94,7 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
               labelFormatter={(l) => `Day ${l}`}
               contentStyle={{ fontSize: 12, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <Legend wrapperStyle={{ fontSize: 13, fontFamily: 'var(--font-display)' }} />
 
             {isModel1Active ? (
               <>
