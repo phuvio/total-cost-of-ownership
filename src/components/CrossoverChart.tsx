@@ -120,19 +120,19 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
               )
             )}
 
-            {activeData.crossoverDays < Infinity && (
+            {Number.isFinite(activeData.crossoverDays) && activeData.crossoverDays >= 0 ? (
               <ReferenceLine
-                x={Math.round(activeData.crossoverDays)}
+                x={Math.max(1, Math.round(activeData.crossoverDays))}
                 stroke="hsl(var(--foreground))"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Crossover: Day ${Math.round(activeData.crossoverDays)}`,
+                  value: `Crossover: Day ${Math.max(1, Math.round(activeData.crossoverDays))}`,
                   position: 'top',
                   style: { fontSize: 12, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
                 }}
               />
-            )}
+            ) : null}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
