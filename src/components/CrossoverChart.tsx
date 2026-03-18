@@ -38,8 +38,6 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
     mergedPoints.push(point);
   }
 
-  const activeCrossover = activeData.crossoverDays < maxDays
-    ? Math.round(activeData.crossoverDays) : null;
 
   const isModel1Active = activeModel === 1;
 
