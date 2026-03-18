@@ -130,7 +130,8 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
                 strokeWidth={1.5}
                 label={{
                   value: `Crossover: Day ${Math.max(1, Math.round(activeData.crossoverDays))}`,
-                  position: 'top',
+                  position: 'insideTop',
+                  offset: 20,
                   style: { fontSize: 12, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
                 }}
               />
