@@ -54,7 +54,7 @@ export const defaultParams: TCOParams = {
   outputTokenPrice: 0.00003,
   contextLength: 4096,
   responseLength: 512,
-  requestsPerDay: 50000,
+  requestsPerDay: 10000,
   avgTokensPerRequest: 2000,
   avgResponseTokens: 500,
   peakLoadMultiplier: 1.5,

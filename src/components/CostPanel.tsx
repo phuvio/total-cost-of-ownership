@@ -9,16 +9,19 @@ interface Props {
   model2Name: string;
 }
 
+function fmtFi(n: number, decimals = 2): string {
+  return n.toLocaleString('fi-FI', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + ' €';
+}
+
 function fmt(n: number): string {
-  if (n >= 1_000_000) return `€${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `€${(n / 1_000).toFixed(1)}k`;
-  return `€${n.toFixed(4)}`;
+  if (n >= 1_000_000) return fmtFi(n, 0);
+  if (n >= 1_000) return fmtFi(n, 0);
+  if (n >= 1) return fmtFi(n, 2);
+  return fmtFi(n, 4);
 }
 
 function fmtNum(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return n.toFixed(0);
+  return n.toLocaleString('fi-FI', { maximumFractionDigits: 0 });
 }
 
 function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnType<typeof calculateTCO>; days: number; highlight: boolean }) {
