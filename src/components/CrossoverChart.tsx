@@ -38,8 +38,6 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
     mergedPoints.push(point);
   }
 
-  const activeCrossover = activeData.crossoverDays < maxDays
-    ? Math.round(activeData.crossoverDays) : null;
 
   const isModel1Active = activeModel === 1;
 
@@ -94,7 +92,7 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
               labelFormatter={(l) => `Day ${l}`}
               contentStyle={{ fontSize: 12, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <Legend wrapperStyle={{ fontSize: 13, fontFamily: 'var(--font-display)' }} />
 
             {isModel1Active ? (
               <>
@@ -122,16 +120,16 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
               )
             )}
 
-            {activeCrossover && activeCrossover < maxDays && (
+            {activeData.crossoverDays < Infinity && (
               <ReferenceLine
-                x={activeCrossover}
+                x={Math.round(activeData.crossoverDays)}
                 stroke="hsl(var(--foreground))"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Crossover: Day ${activeCrossover}`,
+                  value: `Crossover: Day ${Math.round(activeData.crossoverDays)}`,
                   position: 'top',
-                  style: { fontSize: 10, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
+                  style: { fontSize: 12, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
                 }}
               />
             )}
