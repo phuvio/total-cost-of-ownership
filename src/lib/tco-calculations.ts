@@ -91,8 +91,16 @@ export const defaultParams: TCOParams = {
 };
 
 export function calculateTCO(p: TCOParams) {
-  // Token costs per request
-  const cTokens = (p.avgTokensPerRequest * p.inputTokenPrice) + (p.avgResponseTokens * p.outputTokenPrice);
+  // Token-level factors (reduce token counts)
+  const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
+  const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
+  const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
+  const tokenFactor = tokenRedFactor * quantFactor * fineTuningTokenFactor;
+
+  // Token costs per request (factors applied to token counts)
+  const tokenCost =
+    ((p.avgTokensPerRequest * tokenFactor) * p.inputTokenPrice) +
+    ((p.avgResponseTokens * tokenFactor) * p.outputTokenPrice);
 
   // Retrieval cost
   const cRetrieval = (p.vectorDb ? p.embeddingCostPerReq : 0) + (p.embeddingGen ? p.embeddingCostPerReq * 0.5 : 0);
@@ -109,20 +117,23 @@ export function calculateTCO(p: TCOParams) {
   // Compute overhead
   const cCompute = p.modelType === 'self-hosted' ? 0.002 : p.modelType === 'cloud' ? 0.001 : 0;
 
-  // Base inference cost per request
-  const cInferenceRequest = cTokens + cRetrieval + cReranking + cGuardrails + cTools + cCompute;
+  // Compute-level factor (speculative decoding reduces compute)
+  const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
+  const computeCost = cCompute * specDecodingFactor;
 
-  // Optimization factors
+  // Base cost per request
+  const baseCost = tokenCost + cRetrieval + cReranking + cGuardrails + cTools + computeCost;
+
+  // Request-level factors (reduce effective request volume/cost)
   const cacheReduction = p.caching ? (1 - p.cacheHitRate / 100) : 1;
   const routingFactor = p.modelRouting ? (1 - p.routingShare / 200) : 1;
-  const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
-  const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
-  const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
-  
-  const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
+  const requestFactor = cacheReduction * routingFactor * batchFactor;
 
-  const cInferenceOptimized = cInferenceRequest * cacheReduction * routingFactor * tokenRedFactor * batchFactor * quantFactor * fineTuningTokenFactor * specDecodingFactor;
+  const cInferenceOptimized = baseCost * requestFactor;
+
+  // Unoptimized base for reference
+  const cInferenceRequest = (p.avgTokensPerRequest * p.inputTokenPrice) + (p.avgResponseTokens * p.outputTokenPrice) + cRetrieval + cReranking + cGuardrails + cTools + cCompute;
 
   // Training costs
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
@@ -135,7 +146,7 @@ export function calculateTCO(p: TCOParams) {
   // TCO
   const tco = cTraining + annualInference;
 
-  // Crossover point (days where cumulative inference = training)
+  // Crossover point
   const dailyInference = cInferenceOptimized * p.requestsPerDay;
   const crossoverDays = dailyInference > 0 ? cTraining / dailyInference : Infinity;
 
