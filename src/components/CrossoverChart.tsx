@@ -38,6 +38,35 @@ export function CrossoverChart({ params1, params2, activeModel, model2Ever, mode
     mergedPoints.push(point);
   }
 
+const PIE_COLORS = [
+  'hsl(210, 70%, 55%)',
+  'hsl(160, 60%, 45%)',
+  'hsl(30, 80%, 55%)',
+  'hsl(0, 72%, 60%)',
+  'hsl(280, 65%, 55%)',
+  'hsl(45, 85%, 55%)',
+];
+
+const PIE_LABELS: Record<string, string> = {
+  tokens: 'Tokens',
+  retrieval: 'Retrieval',
+  reranking: 'Reranking',
+  guardrails: 'Guardrails',
+  tools: 'Tools',
+  compute: 'Compute',
+};
+
+function breakdownToData(breakdown: Record<string, number>) {
+  return Object.entries(breakdown)
+    .filter(([, v]) => v > 0)
+    .map(([key, value]) => ({ name: PIE_LABELS[key] || key, value, key }));
+}
+
+function fmtCost(n: number): string {
+  if (n >= 1) return `€${n.toFixed(2)}`;
+  if (n >= 0.001) return `€${n.toFixed(4)}`;
+  return `€${n.toFixed(6)}`;
+}
 
   const isModel1Active = activeModel === 1;
 
