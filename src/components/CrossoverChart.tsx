@@ -1,5 +1,5 @@
 import { generateChartData, TCOParams } from "@/lib/tco-calculations";
-import { Area, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, Line, ComposedChart } from "recharts";
+import { Area, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, Line, ComposedChart, PieChart, Pie, Cell } from "recharts";
 
 interface Props {
   params1: TCOParams;
