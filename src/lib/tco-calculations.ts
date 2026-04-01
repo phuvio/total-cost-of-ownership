@@ -160,6 +160,15 @@ export function calculateTCO(p: TCOParams) {
   const dailyInference = cInferenceOptimized * adjustedRequests;
   const crossoverDays = dailyInference > 0 ? cTraining / dailyInference : Infinity;
 
+  const costBreakdown = {
+    tokens: tokenCost,
+    retrieval: cRetrieval,
+    reranking: cReranking,
+    guardrails: cGuardrails,
+    tools: cTools,
+    compute: computeCost,
+  };
+
   return {
     trainingCost: cTraining,
     inferencePerRequest: cInferenceOptimized,
@@ -169,6 +178,7 @@ export function calculateTCO(p: TCOParams) {
     crossoverDays,
     dailyInference,
     cInferenceRequest,
+    costBreakdown,
   };
 }
 
