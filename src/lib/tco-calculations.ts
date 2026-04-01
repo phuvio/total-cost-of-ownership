@@ -115,7 +115,11 @@ export function calculateTCO(p: TCOParams) {
   const cTools = p.toolCalls ? 0.0005 : 0;
 
   // Compute overhead
-  const cCompute = p.modelType === 'self-hosted' ? 0.002 : p.modelType === 'cloud' ? 0.001 : 0;
+  const tokensPerSecond = 1000; // TODO: make this a parameter
+  const costPerSecond = p.gpuPrice / 3600;
+  const computePerRequest =
+    (p.avgTokensPerRequest + p.avgResponseTokens) / tokensPerSecond * costPerSecond;
+  const cCompute = p.modelType === 'self-hosted' ? computePerRequest : p.modelType === 'cloud' ? computePerRequest * 0.5 : 0;
 
   // Compute-level factor (speculative decoding reduces compute)
   const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
