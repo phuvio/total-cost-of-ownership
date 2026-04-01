@@ -147,14 +147,17 @@ export function calculateTCO(p: TCOParams) {
   const cEngineering = p.engineeringHours * p.costPerHour;
   const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + p.hardwareCost;
 
+  // Adjusted requests with peak load
+  const adjustedRequests = p.requestsPerDay * p.peakLoadMultiplier;
+
   // Period inference
-  const annualInference = cInferenceOptimized * p.requestsPerDay * p.days;
+  const annualInference = cInferenceOptimized * adjustedRequests * p.days;
 
   // TCO
   const tco = cTraining + annualInference;
 
   // Crossover point
-  const dailyInference = cInferenceOptimized * p.requestsPerDay;
+  const dailyInference = cInferenceOptimized * adjustedRequests;
   const crossoverDays = dailyInference > 0 ? cTraining / dailyInference : Infinity;
 
   return {
