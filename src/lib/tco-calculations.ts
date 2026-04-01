@@ -126,7 +126,10 @@ export function calculateTCO(p: TCOParams) {
 
   // Request-level factors (reduce effective request volume/cost)
   const cacheReduction = p.caching ? (1 - p.cacheHitRate / 100) : 1;
-  const routingFactor = p.modelRouting ? (1 - p.routingShare / 200) : 1;
+  const cheapModelDiscount = 0.3;
+  const routingFactor = p.modelRouting
+    ? (1 - p.routingShare / 100) + (p.routingShare / 100) * cheapModelDiscount
+    : 1;
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
   const requestFactor = cacheReduction * routingFactor * batchFactor;
 
