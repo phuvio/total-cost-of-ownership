@@ -53,6 +53,7 @@ function fmtCost(n: number): string {
 function CostPieChart({ title, breakdown }: { title: string; breakdown: Record<string, number> }) {
   const data = breakdownToData(breakdown);
   if (data.length === 0) return null;
+  const total = data.reduce((sum, d) => sum + d.value, 0);
 
   return (
     <div className="flex-1 min-w-[200px]">
@@ -77,19 +78,25 @@ function CostPieChart({ title, breakdown }: { title: string; breakdown: Record<s
               ))}
             </Pie>
             <Tooltip
-              formatter={(v: number) => [fmtCost(v), 'Cost/req']}
+              formatter={(v: number) => {
+                const pct = total > 0 ? ((v / total) * 100).toFixed(1) : '0';
+                return [`${pct}%`, undefined];
+              }}
               contentStyle={{ fontSize: 11, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
           </PieChart>
         </ResponsiveContainer>
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-1">
-        {data.map((entry) => (
-          <div key={entry.key} className="flex items-center gap-1 text-[10px]" style={{ fontFamily: 'var(--font-display)' }}>
-            <div className="w-2 h-2 rounded-sm" style={{ background: PIE_COLORS[PIE_KEY_INDEX[entry.key] ?? 0] }} />
-            <span className="text-muted-foreground">{entry.name}</span>
-          </div>
-        ))}
+        {data.map((entry) => {
+          const pct = total > 0 ? ((entry.value / total) * 100).toFixed(1) : '0';
+          return (
+            <div key={entry.key} className="flex items-center gap-1 text-[10px]" style={{ fontFamily: 'var(--font-display)' }}>
+              <div className="w-2 h-2 rounded-sm" style={{ background: PIE_COLORS[PIE_KEY_INDEX[entry.key] ?? 0] }} />
+              <span className="text-muted-foreground">{entry.name} {pct}%</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
