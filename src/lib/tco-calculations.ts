@@ -45,6 +45,13 @@ export interface TCOParams {
   compressionImplHours: number;
   fineTuningImplHours: number;
   specDecodingImplHours: number;
+  // Implementation hours per architecture component
+  vectorDbImplHours: number;
+  embeddingGenImplHours: number;
+  rerankingImplHours: number;
+  moderationImplHours: number;
+  guardrailsImplHours: number;
+  toolCallsImplHours: number;
   hardwareCost: number;
   // Dev costs
   engineeringHours: number;
