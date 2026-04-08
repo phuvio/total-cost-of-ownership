@@ -58,6 +58,12 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
   );
 
   const implHoursMap: Partial<Record<keyof TCOParams, keyof TCOParams>> = {
+    vectorDb: 'vectorDbImplHours',
+    embeddingGen: 'embeddingGenImplHours',
+    rerankingModel: 'rerankingImplHours',
+    moderationModel: 'moderationImplHours',
+    guardrails: 'guardrailsImplHours',
+    toolCalls: 'toolCallsImplHours',
     caching: 'cachingImplHours',
     modelRouting: 'routingImplHours',
     quantization: 'quantizationImplHours',
