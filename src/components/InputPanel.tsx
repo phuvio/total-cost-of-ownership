@@ -58,6 +58,12 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
   );
 
   const implHoursMap: Partial<Record<keyof TCOParams, keyof TCOParams>> = {
+    vectorDb: 'vectorDbImplHours',
+    embeddingGen: 'embeddingGenImplHours',
+    rerankingModel: 'rerankingImplHours',
+    moderationModel: 'moderationImplHours',
+    guardrails: 'guardrailsImplHours',
+    toolCalls: 'toolCallsImplHours',
     caching: 'cachingImplHours',
     modelRouting: 'routingImplHours',
     quantization: 'quantizationImplHours',
@@ -209,11 +215,17 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
         <Section title="System Architecture">
           <div className="param-grid space-y-1">
             {toggle("Vector Database", "vectorDb")}
+            {params.vectorDb && numField("Implementation hours", "vectorDbImplHours", "1")}
             {toggle("Embedding Generation", "embeddingGen")}
+            {params.embeddingGen && numField("Implementation hours", "embeddingGenImplHours", "1")}
             {toggle("Reranking Model", "rerankingModel")}
+            {params.rerankingModel && numField("Implementation hours", "rerankingImplHours", "1")}
             {toggle("Moderation Model", "moderationModel")}
+            {params.moderationModel && numField("Implementation hours", "moderationImplHours", "1")}
             {toggle("Guardrails", "guardrails")}
+            {params.guardrails && numField("Implementation hours", "guardrailsImplHours", "1")}
             {toggle("Tool Calls", "toolCalls")}
+            {params.toolCalls && numField("Implementation hours", "toolCallsImplHours", "1")}
             {numField("Embedding cost / req (€)", "embeddingCostPerReq", "0.0001")}
             {numField("Reranker cost / req (€)", "rerankerCostPerReq", "0.0001")}
           </div>

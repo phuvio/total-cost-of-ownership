@@ -45,6 +45,13 @@ export interface TCOParams {
   compressionImplHours: number;
   fineTuningImplHours: number;
   specDecodingImplHours: number;
+  // Implementation hours per architecture component
+  vectorDbImplHours: number;
+  embeddingGenImplHours: number;
+  rerankingImplHours: number;
+  moderationImplHours: number;
+  guardrailsImplHours: number;
+  toolCallsImplHours: number;
   hardwareCost: number;
   // Dev costs
   engineeringHours: number;
@@ -96,6 +103,12 @@ export const defaultParams: TCOParams = {
   compressionImplHours: 12,
   fineTuningImplHours: 120,
   specDecodingImplHours: 80,
+  vectorDbImplHours: 80,
+  embeddingGenImplHours: 24,
+  rerankingImplHours: 60,
+  moderationImplHours: 16,
+  guardrailsImplHours: 30,
+  toolCallsImplHours: 80,
   hardwareCost: 0,
   engineeringHours: 10,
   costPerHour: 150,
