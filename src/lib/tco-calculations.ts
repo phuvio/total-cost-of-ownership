@@ -37,6 +37,14 @@ export interface TCOParams {
   fineTuningCostOpt: number;
   fineTuningTokenReduction: number;
   specDecodingReduction: number;
+  // Implementation hours per optimization
+  cachingImplHours: number;
+  routingImplHours: number;
+  quantizationImplHours: number;
+  batchingImplHours: number;
+  compressionImplHours: number;
+  fineTuningImplHours: number;
+  specDecodingImplHours: number;
   hardwareCost: number;
   // Dev costs
   engineeringHours: number;
@@ -81,6 +89,13 @@ export const defaultParams: TCOParams = {
   fineTuningCostOpt: 5000,
   fineTuningTokenReduction: 15,
   specDecodingReduction: 30,
+  cachingImplHours: 16,
+  routingImplHours: 28,
+  quantizationImplHours: 80,
+  batchingImplHours: 24,
+  compressionImplHours: 12,
+  fineTuningImplHours: 120,
+  specDecodingImplHours: 80,
   hardwareCost: 0,
   engineeringHours: 10,
   costPerHour: 150,
