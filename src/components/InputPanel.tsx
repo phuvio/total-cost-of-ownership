@@ -57,12 +57,34 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
     </div>
   );
 
+  const implHoursMap: Partial<Record<keyof TCOParams, keyof TCOParams>> = {
+    caching: 'cachingImplHours',
+    modelRouting: 'routingImplHours',
+    quantization: 'quantizationImplHours',
+    batching: 'batchingImplHours',
+    promptCompression: 'compressionImplHours',
+    fineTuningReduction: 'fineTuningImplHours',
+    speculativeDecoding: 'specDecodingImplHours',
+  };
+
   const toggle = (label: string, key: keyof TCOParams, disabled = false) => (
     <div className={`flex items-center justify-between ${disabled ? 'opacity-50' : ''}`}>
       <Label className="param-label">{label}</Label>
       <Switch
         checked={params[key] as boolean}
-        onCheckedChange={(v) => set(key, v as TCOParams[typeof key])}
+        onCheckedChange={(v) => {
+          const implKey = implHoursMap[key];
+          if (implKey) {
+            const hours = params[implKey] as number;
+            const currentEng = params.engineeringHours;
+            const newEng = v
+              ? currentEng + hours
+              : Math.max(0, currentEng - hours);
+            onChange({ ...params, [key]: v, engineeringHours: newEng });
+          } else {
+            set(key, v as TCOParams[typeof key]);
+          }
+        }}
         disabled={disabled}
       />
     </div>
