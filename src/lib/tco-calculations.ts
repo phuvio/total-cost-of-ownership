@@ -37,6 +37,14 @@ export interface TCOParams {
   fineTuningCostOpt: number;
   fineTuningTokenReduction: number;
   specDecodingReduction: number;
+  // Implementation hours per optimization
+  cachingImplHours: number;
+  routingImplHours: number;
+  quantizationImplHours: number;
+  batchingImplHours: number;
+  compressionImplHours: number;
+  fineTuningImplHours: number;
+  specDecodingImplHours: number;
   hardwareCost: number;
   // Dev costs
   engineeringHours: number;
