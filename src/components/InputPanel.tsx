@@ -223,18 +223,25 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
           <div className="param-grid space-y-1">
             {toggle("Caching", "caching")}
             {params.caching && numField("Cache hit rate (%)", "cacheHitRate", "1")}
+            {params.caching && numField("Implementation hours", "cachingImplHours", "1")}
             {toggle("Model Routing", "modelRouting")}
             {params.modelRouting && numField("Routing share (%)", "routingShare", "1")}
+            {params.modelRouting && numField("Implementation hours", "routingImplHours", "1")}
             {toggle("Quantization", "quantization", params.modelType === 'api')}
             {params.quantization && params.modelType !== 'api' && numField("Size reduction (%)", "sizeReduction", "1")}
+            {params.quantization && params.modelType !== 'api' && numField("Implementation hours", "quantizationImplHours", "1")}
             {toggle("Batching", "batching")}
             {params.batching && numField("Batch size", "batchSize", "1")}
+            {params.batching && numField("Implementation hours", "batchingImplHours", "1")}
             {toggle("Prompt Compression", "promptCompression")}
             {params.promptCompression && numField("Token reduction (%)", "tokenReduction", "1")}
+            {params.promptCompression && numField("Implementation hours", "compressionImplHours", "1")}
             {toggle("Fine-tuning", "fineTuningReduction", params.modelType === 'api')}
             {params.fineTuningReduction && params.modelType !== 'api' && numField("Reduction of token usage (%)", "fineTuningTokenReduction", "1")}
+            {params.fineTuningReduction && params.modelType !== 'api' && numField("Implementation hours", "fineTuningImplHours", "1")}
             {toggle("Speculative Decoding", "speculativeDecoding", params.modelType === 'api')}
             {params.speculativeDecoding && params.modelType !== 'api' && numField("Reduced inference cost (%)", "specDecodingReduction", "1")}
+            {params.speculativeDecoding && params.modelType !== 'api' && numField("Implementation hours", "specDecodingImplHours", "1")}
           </div>
         </Section>
 
