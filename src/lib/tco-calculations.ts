@@ -119,75 +119,87 @@ export const defaultParams: TCOParams = {
 };
 
 export function calculateTCO(p: TCOParams) {
-  // Token-level factors (reduce token counts)
+  // 1. Effective tokens (context-aware)
+  const effectiveInputTokens = Math.min(p.avgTokensPerRequest, p.contextLength);
+  const effectiveOutputTokens = Math.min(p.avgResponseTokens, p.responseLength);
+
+  // 2. Token-level optimizations
   const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
   const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
   const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
   const tokenFactor = tokenRedFactor * quantFactor * fineTuningTokenFactor;
 
-  // Token costs per request (factors applied to token counts)
-  const tokenCost =
-    ((p.avgTokensPerRequest * tokenFactor) * p.inputTokenPrice) +
-    ((p.avgResponseTokens * tokenFactor) * p.outputTokenPrice);
+  const finalInputTokens = effectiveInputTokens * tokenFactor;
+  const finalOutputTokens = effectiveOutputTokens * tokenFactor;
 
-  // Retrieval cost
+  // 3. Token cost
+  const tokenCost = finalInputTokens * p.inputTokenPrice + finalOutputTokens * p.outputTokenPrice;
+
+  // 4. Retrieval & components
   const cRetrieval = (p.vectorDb ? p.embeddingCostPerReq : 0) + (p.embeddingGen ? p.embeddingCostPerReq * 0.5 : 0);
-
-  // Reranking
   const cReranking = p.rerankingModel ? p.rerankerCostPerReq : 0;
-
-  // Guardrails (moderation + guardrails)
   const cGuardrails = (p.moderationModel ? 0.0002 : 0) + (p.guardrails ? 0.0003 : 0);
-
-  // Tool calls
   const cTools = p.toolCalls ? 0.0005 : 0;
 
-  // Compute overhead
-  const tokensPerSecond = 1000; // TODO: make this a parameter
+  // 5. Compute cost (context-aware)
+  const tokensPerSecond = 1000;
   const costPerSecond = p.gpuPrice / 3600;
-  const computePerRequest =
-    (p.avgTokensPerRequest + p.avgResponseTokens) / tokensPerSecond * costPerSecond;
-  const cCompute = p.modelType === 'self-hosted' ? computePerRequest : p.modelType === 'cloud' ? computePerRequest * 0.5 : 0;
+  const totalTokens = finalInputTokens + finalOutputTokens;
+  const attentionFactor = Math.max(1, finalInputTokens / 1000);
+  const rawCompute = (totalTokens * attentionFactor) / tokensPerSecond * costPerSecond;
+  const baseCompute = p.modelType === 'self-hosted' ? rawCompute : p.modelType === 'cloud' ? rawCompute * 0.5 : 0;
+  const computeCost = p.speculativeDecoding ? baseCompute * (1 - p.specDecodingReduction / 100) : baseCompute;
 
-  // Compute-level factor (speculative decoding reduces compute)
-  const specDecodingFactor = p.speculativeDecoding ? (1 - p.specDecodingReduction / 100) : 1;
-  const computeCost = cCompute * specDecodingFactor;
-
-  // Base cost per request
+  // 6. Base inference cost per request
   const baseCost = tokenCost + cRetrieval + cReranking + cGuardrails + cTools + computeCost;
 
-  // Request-level factors (reduce effective request volume/cost)
-  const cacheReduction = p.caching ? (1 - p.cacheHitRate / 100) : 1;
-  const cheapModelDiscount = 0.3;
+  // 7. Request-level optimizations
+  const cacheFactor = p.caching ? (1 - p.cacheHitRate / 100) : 1;
+  const cheapModelFactor = 0.3;
   const routingFactor = p.modelRouting
-    ? (1 - p.routingShare / 100) + (p.routingShare / 100) * cheapModelDiscount
+    ? (1 - p.routingShare / 100) + (p.routingShare / 100) * cheapModelFactor
     : 1;
   const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
-  const requestFactor = cacheReduction * routingFactor * batchFactor;
-
+  const requestFactor = cacheFactor * routingFactor * batchFactor;
   const cInferenceOptimized = baseCost * requestFactor;
 
-  // Unoptimized base for reference
-  const cInferenceRequest = (p.avgTokensPerRequest * p.inputTokenPrice) + (p.avgResponseTokens * p.outputTokenPrice) + cRetrieval + cReranking + cGuardrails + cTools + cCompute;
+  // 8. Reference (no optimizations)
+  const cInferenceRequest = effectiveInputTokens * p.inputTokenPrice + effectiveOutputTokens * p.outputTokenPrice + cRetrieval + cReranking + cGuardrails + cTools + baseCompute;
 
-  // Training costs
+  // 9. Engineering costs
+  const cOptimizationEngineering =
+    (p.caching ? p.cachingImplHours : 0) +
+    (p.modelRouting ? p.routingImplHours : 0) +
+    (p.quantization ? p.quantizationImplHours : 0) +
+    (p.batching ? p.batchingImplHours : 0) +
+    (p.promptCompression ? p.compressionImplHours : 0) +
+    (p.fineTuningReduction ? p.fineTuningImplHours : 0) +
+    (p.speculativeDecoding ? p.specDecodingImplHours : 0);
+
+  const cArchitectureEngineering =
+    (p.vectorDb ? p.vectorDbImplHours : 0) +
+    (p.embeddingGen ? p.embeddingGenImplHours : 0) +
+    (p.rerankingModel ? p.rerankingImplHours : 0) +
+    (p.moderationModel ? p.moderationImplHours : 0) +
+    (p.guardrails ? p.guardrailsImplHours : 0) +
+    (p.toolCalls ? p.toolCallsImplHours : 0);
+
+  const cEngineering = (p.engineeringHours + cOptimizationEngineering + cArchitectureEngineering) * p.costPerHour;
+
+  // 10. Training costs
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
-  const cEngineering = p.engineeringHours * p.costPerHour;
-  const cTraining = cTrainingCompute + p.finetuningCost + cEngineering + p.dataPreparationCost + p.hardwareCost;
+  const cTraining = cTrainingCompute + p.finetuningCost + p.dataPreparationCost + p.hardwareCost + cEngineering;
 
-  // Adjusted requests with peak load
-  const adjustedRequests = p.requestsPerDay * p.peakLoadMultiplier;
-
-  // Period inference
-  const annualInference = cInferenceOptimized * adjustedRequests * p.days;
-
-  // TCO
-  const tco = cTraining + annualInference;
-
-  // Crossover point
+  // 11. Usage scaling
+  const adjustedRequests = p.requestsPerDay * (0.7 + 0.3 * p.peakLoadMultiplier);
   const dailyInference = cInferenceOptimized * adjustedRequests;
+  const totalInference = dailyInference * p.days;
+
+  // 12. TCO & crossover
+  const tco = cTraining + totalInference;
   const crossoverDays = dailyInference > 0 ? cTraining / dailyInference : Infinity;
 
+  // 13. Cost breakdown
   const costBreakdown = {
     tokens: tokenCost,
     retrieval: cRetrieval,
@@ -200,13 +212,17 @@ export function calculateTCO(p: TCOParams) {
   return {
     trainingCost: cTraining,
     inferencePerRequest: cInferenceOptimized,
-    requestsPerDay: p.requestsPerDay,
-    annualInference,
+    requestsPerDay: adjustedRequests,
+    dailyInference,
+    totalInference,
     tco,
     crossoverDays,
-    dailyInference,
     cInferenceRequest,
     costBreakdown,
+    tokens: {
+      input: finalInputTokens,
+      output: finalOutputTokens,
+    },
   };
 }
 
