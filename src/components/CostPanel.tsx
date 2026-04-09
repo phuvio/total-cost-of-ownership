@@ -53,7 +53,7 @@ function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnT
           <div className="metric-label">Requests per Day</div>
         </div>
         <div className="metric-card col-span-2">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.annualInference)}</div>
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}><div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.totalInference)}</div></div>
           <div className="metric-label">Total Inference Cost ({days} days)</div>
         </div>
       </div>
