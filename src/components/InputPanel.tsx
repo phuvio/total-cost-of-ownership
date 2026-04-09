@@ -185,10 +185,18 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
                   'cloud': 100,
                   'self-hosted': 500,
                 };
+                const baseHours = engineeringDefaults[modelType] ?? 10;
+                // Sum implementation hours from all active toggles
+                const activeImplHours = Object.entries(implHoursMap).reduce((sum, [toggleKey, hoursKey]) => {
+                  if (params[toggleKey as keyof TCOParams]) {
+                    return sum + (params[hoursKey as keyof TCOParams] as number);
+                  }
+                  return sum;
+                }, 0);
                 onChange({
                   ...params,
                   modelType,
-                  engineeringHours: engineeringDefaults[modelType] ?? params.engineeringHours,
+                  engineeringHours: baseHours + activeImplHours,
                   costPerHour: 150,
                   trainingGpuHours: 0,
                   gpuPrice: 3.5,
