@@ -44,7 +44,7 @@ export function InputPanel({ params, onChange, activeModel, onModelChange, days,
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
-  const implHoursKeys = new Set<string>(Object.values(implHoursMap));
+  const implHoursValues = new Set<string>(Object.values(implHoursMap) as string[]);
 
   const numField = (label: string, key: keyof TCOParams, step?: string) => (
     <div className="grid grid-cols-2 items-center gap-2">
