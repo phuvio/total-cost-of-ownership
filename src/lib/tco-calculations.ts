@@ -1,18 +1,20 @@
 export interface TCOParams {
   // Timeline
   days: number;
+
   // Model config
   modelType: 'api' | 'cloud' | 'self-hosted';
-  inputTokenPrice: number;
-  outputTokenPrice: number;
-  contextLength: number;
-  responseLength: number;
+  inputTokenPrice: number;   // $/token
+  outputTokenPrice: number;  // $/token
+  contextLength: number;     // max tokens
+  responseLength: number;    // max output tokens
+
   // Usage
   requestsPerDay: number;
   avgTokensPerRequest: number;
   avgResponseTokens: number;
-  peakLoadMultiplier: number;
-  // Architecture
+
+  // Architecture components
   vectorDb: boolean;
   embeddingGen: boolean;
   rerankingModel: boolean;
@@ -21,7 +23,9 @@ export interface TCOParams {
   toolCalls: boolean;
   embeddingCostPerReq: number;
   rerankerCostPerReq: number;
-  // Optimization
+  toolCallsPerRequest: number; // NEW: avg number of tool calls per request
+
+  // Optimization flags
   caching: boolean;
   modelRouting: boolean;
   quantization: boolean;
@@ -29,15 +33,50 @@ export interface TCOParams {
   promptCompression: boolean;
   fineTuningReduction: boolean;
   speculativeDecoding: boolean;
-  cacheHitRate: number;
-  routingShare: number;
-  batchSize: number;
-  tokenReduction: number;
-  sizeReduction: number;
+
+  // Optimization parameters — all require source justification (see comments)
+  cacheHitRate: number;        // 0–100 %
+  routingSmallModelShare: number;  // 0–100 %, share routed to cheap model
+  routingCostRatio: number;    // NEW: cheap model cost / expensive model cost
+  tokenReduction: number;      // 0–100 %, prompt compression savings
+  fineTuningTokenReduction: number; // 0–100 %, token savings from fine-tuned shorter prompts
+
+  // Quantization: affects GPU memory and throughput, NOT token prices
+  // Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
+  quantizationThroughputGain: number; // e.g. 1.5 = 50% more tokens/sec with INT8
+  quantizationQualityRetention: number; // 0–100%, typically 95–99% (GPTQ paper)
+
+  // Speculative decoding: latency/throughput benefit for self-hosted
+  // Leviathan et al. (2023) "Fast Inference from Transformers via Speculative Decoding"
+  specDecodingThroughputGain: number; // e.g. 2.0 = 2x throughput
+
+  // Batching: API batch discount vs self-hosted utilization improvement
+  // Anthropic/OpenAI Batch API: 50% discount on eligible requests
+  apiBatchDiscount: number;    // 0–100 %, typically 50 for Anthropic/OpenAI
+  // vLLM continuous batching: Kwon et al. (2023)
+  selfHostedBatchUtilizationGain: number; // 0–100 %, throughput improvement
+
+  // Self-hosted compute
+  // Default throughput sources: MLCommons MLPerf Inference results
+  tokensPerSecond: number;     // GPU throughput, model- and hardware-specific
+  gpuPrice: number;            // $/hour
+
+  // Fine-tuning costs
   fineTuningCostOpt: number;
-  fineTuningTokenReduction: number;
-  specDecodingReduction: number;
-  // Implementation hours per optimization
+  trainingGpuHours: number;
+  finetuningCost: number;
+  dataPreparationCost: number;
+  hardwareCost: number;
+
+  // Engineering costs — split into one-time and recurring
+  // One-time: architecture setup, optimization implementation
+  engineeringHoursOneTime: number;
+  costPerHour: number;
+  // Recurring monthly: ops, monitoring, maintenance
+  // Rationale: architecture components (RAG, reranker) require ongoing ops
+  engineeringHoursMonthlyOps: number;
+
+  // Implementation hours per optimization (one-time)
   cachingImplHours: number;
   routingImplHours: number;
   quantizationImplHours: number;
@@ -45,57 +84,90 @@ export interface TCOParams {
   compressionImplHours: number;
   fineTuningImplHours: number;
   specDecodingImplHours: number;
-  // Implementation hours per architecture component
+
+  // Implementation hours per architecture component (one-time)
   vectorDbImplHours: number;
   embeddingGenImplHours: number;
   rerankingImplHours: number;
   moderationImplHours: number;
   guardrailsImplHours: number;
   toolCallsImplHours: number;
-  hardwareCost: number;
-  // Dev costs
-  engineeringHours: number;
-  costPerHour: number;
-  trainingGpuHours: number;
-  gpuPrice: number;
-  finetuningCost: number;
-  dataPreparationCost: number;
 }
 
 export const defaultParams: TCOParams = {
   days: 365,
   modelType: 'api',
-  inputTokenPrice: 0.00001,
-  outputTokenPrice: 0.00003,
+
+  // OpenAI GPT-4o pricing as of 2024 (update from provider pricing pages)
+  inputTokenPrice: 0.000005,
+  outputTokenPrice: 0.000015,
   contextLength: 4096,
   responseLength: 512,
+
   requestsPerDay: 10000,
   avgTokensPerRequest: 2000,
   avgResponseTokens: 500,
-  peakLoadMultiplier: 1.5,
+
   vectorDb: false,
   embeddingGen: false,
   rerankingModel: false,
   moderationModel: false,
   guardrails: false,
   toolCalls: false,
-  embeddingCostPerReq: 0.0001,
-  rerankerCostPerReq: 0.0005,
-  caching: false,
-  modelRouting: false,
-  quantization: false,
-  batching: false,
-  promptCompression: false,
-  fineTuningReduction: false,
-  speculativeDecoding: false,
+  // OpenAI text-embedding-3-small: $0.00000002/token × ~500 tokens ≈ $0.00001/req
+  embeddingCostPerReq: 0.00001,
+  // Cohere Rerank API: ~$0.001/100 searches = $0.00001/req, but cross-encoder self-hosted higher
+  rerankerCostPerReq: 0.0002,
+  toolCallsPerRequest: 2,
+
+  // SGLang (Zheng et al., 2023) §4: ~30% prefix cache hit rate for general chatbot workloads
   cacheHitRate: 30,
-  routingShare: 20,
-  batchSize: 4,
-  tokenReduction: 15,
-  sizeReduction: 25,
-  fineTuningCostOpt: 5000,
+
+  // RouteLLM (Ong et al., 2024): 40–60% of queries can be handled by smaller models
+  routingSmallModelShare: 50,
+  // Example: GPT-4o-mini vs GPT-4o = ~15x price diff → ratio ≈ 0.067
+  // Claude Haiku vs Sonnet = ~5x → ratio ≈ 0.20. Use conservative 0.15 as default.
+  routingCostRatio: 0.15,
+
+  // LLMLingua (Jiang et al., 2023): 2–5x compression, conservative 20% token reduction default
+  tokenReduction: 20,
   fineTuningTokenReduction: 15,
-  specDecodingReduction: 30,
+
+  // Dettmers et al. (2022) LLM.int8(): INT8 quantization ~1.3–1.5x throughput on A100
+  quantizationThroughputGain: 1.4,
+  quantizationQualityRetention: 97,
+
+  // Leviathan et al. (2023): 2–3x wallclock speedup with speculative decoding
+  specDecodingThroughputGain: 2.0,
+
+  // Anthropic / OpenAI Batch API: 50% discount, documented in provider API docs
+  apiBatchDiscount: 50,
+  // Kwon et al. (2023) vLLM continuous batching: up to 23x throughput vs naive serving
+  // Conservative default: 40% utilization improvement with moderate batch sizes
+  selfHostedBatchUtilizationGain: 40,
+
+  // MLPerf Inference results: A100 80GB, Llama-2-70B, ~20 tok/s single-stream
+  // With vLLM continuous batching at moderate load: ~200–400 tok/s realistic throughput
+  tokensPerSecond: 300,
+  // Lambda Labs A100 80GB: ~$1.99/hr on-demand; A10G ~$0.76/hr (2024 rates)
+  gpuPrice: 1.99,
+
+  fineTuningCostOpt: 0,
+  trainingGpuHours: 0,
+  finetuningCost: 0,
+  dataPreparationCost: 0,
+  hardwareCost: 0,
+
+  // Base engineering: initial deployment setup
+  // Conservative estimate: 40h for basic API integration, 200h for self-hosted
+  engineeringHoursOneTime: 40,
+  // Monthly ops: ~10h for API-based, ~40h for self-hosted
+  // Source: Reyna et al. (2025) on-premise TCO paper reports staffing as major TCO component
+  engineeringHoursMonthlyOps: 10,
+  costPerHour: 150,
+
+  // Implementation hours — based on typical engineering estimates
+  // These are the most uncertain parameters; treat as configurable, not ground truth
   cachingImplHours: 16,
   routingImplHours: 28,
   quantizationImplHours: 80,
@@ -103,71 +175,143 @@ export const defaultParams: TCOParams = {
   compressionImplHours: 12,
   fineTuningImplHours: 120,
   specDecodingImplHours: 80,
+
   vectorDbImplHours: 80,
   embeddingGenImplHours: 24,
   rerankingImplHours: 60,
   moderationImplHours: 16,
   guardrailsImplHours: 30,
   toolCallsImplHours: 80,
-  hardwareCost: 0,
-  engineeringHours: 10,
-  costPerHour: 150,
-  trainingGpuHours: 0,
-  gpuPrice: 3.5,
-  finetuningCost: 0,
-  dataPreparationCost: 0,
 };
 
 export function calculateTCO(p: TCOParams) {
-  // 1. Effective tokens (context-aware)
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 1: Effective token counts (context window clipping)
+  // ─────────────────────────────────────────────────────────────────────────
   const effectiveInputTokens = Math.min(p.avgTokensPerRequest, p.contextLength);
   const effectiveOutputTokens = Math.min(p.avgResponseTokens, p.responseLength);
 
-  // 2. Token-level optimizations
-  const tokenRedFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
-  const quantFactor = p.quantization ? (1 - p.sizeReduction / 100) : 1;
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 2: Token-level reductions (prompt compression, fine-tuning only)
+  // Quantization reduces model size and improves GPU throughput;
+  // Source: Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
+  // ─────────────────────────────────────────────────────────────────────────
+  const compressionFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
   const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
-  const tokenFactor = tokenRedFactor * quantFactor * fineTuningTokenFactor;
 
-  const finalInputTokens = effectiveInputTokens * tokenFactor;
-  const finalOutputTokens = effectiveOutputTokens * tokenFactor;
+  const finalInputTokens = effectiveInputTokens * compressionFactor * fineTuningTokenFactor;
+  const finalOutputTokens = effectiveOutputTokens * fineTuningTokenFactor; // compression only on input
 
-  // 3. Token cost
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3: Token cost (API pricing)
+  // Source: provider pricing pages (OpenAI, Anthropic, Google)
+  // FrugalGPT (Chen et al. 2023): C = P_in × T_in + P_out × T_out
+  // ─────────────────────────────────────────────────────────────────────────
   const tokenCost = finalInputTokens * p.inputTokenPrice + finalOutputTokens * p.outputTokenPrice;
 
-  // 4. Retrieval & components
-  const cRetrieval = (p.vectorDb ? p.embeddingCostPerReq : 0) + (p.embeddingGen ? p.embeddingCostPerReq * 0.5 : 0);
-  const cReranking = p.rerankingModel ? p.rerankerCostPerReq : 0;
-  const cGuardrails = (p.moderationModel ? 0.0002 : 0) + (p.guardrails ? 0.0003 : 0);
-  const cTools = p.toolCalls ? 0.0005 : 0;
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 4: Architecture component costs per request
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // 5. Compute cost (context-aware)
-  const tokensPerSecond = 1000;
+  // Embedding: cost for RAG retrieval query embedding
+  // Source: OpenAI text-embedding-3-small pricing
+  const cEmbedding = (p.vectorDb || p.embeddingGen) ? p.embeddingCostPerReq : 0;
+
+  // Reranking: cross-encoder adds latency and cost
+  // Source: Cohere Rerank API; self-hosted BAAI/bge-reranker benchmarks
+  const cReranking = p.rerankingModel ? p.rerankerCostPerReq : 0;
+
+  // Moderation + guardrails: additional model inference
+  // OpenAI moderation API: $0.00002/1K tokens (near-zero); guardrails higher
+  const cGuardrails = (p.moderationModel ? 0.00002 : 0) + (p.guardrails ? 0.0003 : 0);
+
+  // Tool calls: each tool call is an additional LLM round-trip
+  // Cost = toolCallsPerRequest × (input tokens for tool schema + output tokens for call)
+  // Approximation: each tool call ≈ 300 input tokens + 100 output tokens overhead
+  const cTools = p.toolCalls
+    ? p.toolCallsPerRequest * (300 * p.inputTokenPrice + 100 * p.outputTokenPrice)
+    : 0;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 5: Compute cost for self-hosted / cloud-hosted deployments
+  // Quantization affects throughput (tokens/sec).
+  // Formula: cost = (tokens / throughput) × cost_per_second
+  // Source: MLCommons MLPerf Inference Benchmark for throughput defaults
+  // ─────────────────────────────────────────────────────────────────────────
+  const effectiveThroughput = p.quantization
+    ? p.tokensPerSecond * p.quantizationThroughputGain
+    : p.tokensPerSecond;
+
+  // Speculative decoding: further throughput improvement (self-hosted only)
+  // Leviathan et al. (2023): 2–3x wallclock speedup
+  const throughputWithSpecDecoding = p.speculativeDecoding
+    ? effectiveThroughput * p.specDecodingThroughputGain
+    : effectiveThroughput;
+
   const costPerSecond = p.gpuPrice / 3600;
   const totalTokens = finalInputTokens + finalOutputTokens;
-  const attentionFactor = Math.max(1, finalInputTokens / 1000);
-  const rawCompute = (totalTokens * attentionFactor) / tokensPerSecond * costPerSecond;
-  const baseCompute = p.modelType === 'self-hosted' ? rawCompute : p.modelType === 'cloud' ? rawCompute * 0.5 : 0;
-  const computeCost = p.speculativeDecoding ? baseCompute * (1 - p.specDecodingReduction / 100) : baseCompute;
+  const inferenceSeconds = totalTokens / throughputWithSpecDecoding;
 
-  // 6. Base inference cost per request
-  const baseCost = tokenCost + cRetrieval + cReranking + cGuardrails + cTools + computeCost;
+  // Cloud-hosted: managed GPU service, margin added by provider (~2x markup typical)
+  const computeCostSelfHosted = inferenceSeconds * costPerSecond;
+  const computeCostCloud = computeCostSelfHosted * 2.0; // provider markup
 
-  // 7. Request-level optimizations
+  const computeCost =
+    p.modelType === 'self-hosted' ? computeCostSelfHosted :
+    p.modelType === 'cloud' ? computeCostCloud :
+    0; // API: compute bundled into token price
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 6: Base inference cost per request (before request-level optimizations)
+  // ─────────────────────────────────────────────────────────────────────────
+  const baseCostPerRequest = tokenCost + cEmbedding + cReranking + cGuardrails + cTools + computeCost;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 7: Request-level optimizations
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Caching: skip inference for cache hits
+  // SGLang (Zheng et al., 2023): prefix caching for shared system prompts
+  // GPTCache, semantic caching: hit rate depends heavily on use case
   const cacheFactor = p.caching ? (1 - p.cacheHitRate / 100) : 1;
-  const cheapModelFactor = 0.3;
+
+  // Model routing: route share of requests to cheaper model
+  // RouteLLM (Ong et al., 2024): 40–60% of queries handleable by smaller model
+  // FrugalGPT (Chen et al., 2023): cascade approach for cost/quality tradeoff
   const routingFactor = p.modelRouting
-    ? (1 - p.routingShare / 100) + (p.routingShare / 100) * cheapModelFactor
+    ? (1 - p.routingSmallModelShare / 100) + (p.routingSmallModelShare / 100) * p.routingCostRatio
     : 1;
-  const batchFactor = p.batching ? (1 / Math.sqrt(p.batchSize)) : 1;
+
+  // Batching:
+  // API batch: 50% discount (Anthropic Batch API docs, OpenAI Batch API docs)
+  // Self-hosted: continuous batching improves GPU utilization (Kwon et al. 2023 vLLM)
+  //   — higher utilization means more requests per GPU-hour, reducing cost/request
+  const batchFactor =
+    !p.batching ? 1 :
+    p.modelType === 'api' ? (1 - p.apiBatchDiscount / 100) :
+    (1 / (1 + p.selfHostedBatchUtilizationGain / 100)); // cost/req decreases as utilization rises
+
   const requestFactor = cacheFactor * routingFactor * batchFactor;
-  const cInferenceOptimized = baseCost * requestFactor;
+  const optimizedCostPerRequest = baseCostPerRequest * requestFactor;
 
-  // 8. Reference (no optimizations)
-  const cInferenceRequest = effectiveInputTokens * p.inputTokenPrice + effectiveOutputTokens * p.outputTokenPrice + cRetrieval + cReranking + cGuardrails + cTools + baseCompute;
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 8: Reference cost (no optimizations, for savings calculation)
+  // ─────────────────────────────────────────────────────────────────────────
+  const referenceCostPerRequest =
+    effectiveInputTokens * p.inputTokenPrice +
+    effectiveOutputTokens * p.outputTokenPrice +
+    cEmbedding + cReranking + cGuardrails + cTools + computeCostSelfHosted;
 
-  // 9. Engineering costs
-  const cOptimizationEngineering =
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 9: Engineering costs — split one-time vs recurring
+  //
+  // FIX: recurring ops costs (RAG pipeline maintenance, monitoring) are
+  // ongoing and should NOT be counted only as upfront capex.
+  // Source: Reyna et al. (2025) on-premise TCO paper: staffing is major component
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // One-time implementation costs
+  const optimizationImplHours =
     (p.caching ? p.cachingImplHours : 0) +
     (p.modelRouting ? p.routingImplHours : 0) +
     (p.quantization ? p.quantizationImplHours : 0) +
@@ -176,7 +320,7 @@ export function calculateTCO(p: TCOParams) {
     (p.fineTuningReduction ? p.fineTuningImplHours : 0) +
     (p.speculativeDecoding ? p.specDecodingImplHours : 0);
 
-  const cArchitectureEngineering =
+  const architectureImplHours =
     (p.vectorDb ? p.vectorDbImplHours : 0) +
     (p.embeddingGen ? p.embeddingGenImplHours : 0) +
     (p.rerankingModel ? p.rerankingImplHours : 0) +
@@ -184,59 +328,114 @@ export function calculateTCO(p: TCOParams) {
     (p.guardrails ? p.guardrailsImplHours : 0) +
     (p.toolCalls ? p.toolCallsImplHours : 0);
 
-  const cEngineering = (p.engineeringHours + cOptimizationEngineering + cArchitectureEngineering) * p.costPerHour;
+  const oneTimeEngineeringCost =
+    (p.engineeringHoursOneTime + optimizationImplHours + architectureImplHours) * p.costPerHour;
 
-  // 10. Training costs
+  // Recurring ops cost over the deployment period
+  const months = p.days / 30.44;
+  const recurringEngineeringCost = p.engineeringHoursMonthlyOps * p.costPerHour * months;
+
+  const totalEngineeringCost = oneTimeEngineeringCost + recurringEngineeringCost;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 10: Training / setup costs (one-time capex)
+  // ─────────────────────────────────────────────────────────────────────────
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
-  const cTraining = cTrainingCompute + p.finetuningCost + p.dataPreparationCost + p.hardwareCost + cEngineering;
+  const totalSetupCost =
+    cTrainingCompute +
+    p.finetuningCost +
+    p.dataPreparationCost +
+    p.hardwareCost +
+    oneTimeEngineeringCost; // only one-time here
 
-  // 11. Usage scaling
-  const adjustedRequests = p.requestsPerDay * (0.7 + 0.3 * p.peakLoadMultiplier);
-  const dailyInference = cInferenceOptimized * adjustedRequests;
-  const totalInference = dailyInference * p.days;
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 11: Usage scaling
+  //
+  // FIX: peak load multiplier removed from daily request count.
+  // Peak load affects infrastructure sizing and SLA cost, not avg daily volume.
+  // Daily inference cost uses actual requestsPerDay as the base.
+  // ─────────────────────────────────────────────────────────────────────────
+  const dailyInferenceCost = optimizedCostPerRequest * p.requestsPerDay;
 
-  // 12. TCO & crossover
-  const tco = cTraining + totalInference;
-  const crossoverDays = dailyInference > 0 ? cTraining / dailyInference : Infinity;
+  // Recurring ops amortized to daily cost for crossover calculation
+  const dailyOpsCost = (p.engineeringHoursMonthlyOps * p.costPerHour) / 30.44;
+  const dailyTotalCost = dailyInferenceCost + dailyOpsCost;
 
-  // 13. Cost breakdown
+  const totalInferenceCost = dailyInferenceCost * p.days;
+  const tco = totalSetupCost + totalInferenceCost + recurringEngineeringCost;
+
+  // Break-even: days until cumulative inference + ops exceeds setup cost
+  const crossoverDays = dailyTotalCost > 0 ? totalSetupCost / dailyTotalCost : Infinity;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 12: Cost breakdown for visualization
+  // ─────────────────────────────────────────────────────────────────────────
   const costBreakdown = {
-    tokens: tokenCost,
-    retrieval: cRetrieval,
-    reranking: cReranking,
-    guardrails: cGuardrails,
-    tools: cTools,
-    compute: computeCost,
+    tokens: tokenCost * p.requestsPerDay * p.days,
+    retrieval: cEmbedding * p.requestsPerDay * p.days,
+    reranking: cReranking * p.requestsPerDay * p.days,
+    guardrails: cGuardrails * p.requestsPerDay * p.days,
+    tools: cTools * p.requestsPerDay * p.days,
+    compute: computeCost * p.requestsPerDay * p.days,
+    engineeringOneTime: oneTimeEngineeringCost,
+    engineeringRecurring: recurringEngineeringCost,
+    trainingAndSetup: cTrainingCompute + p.finetuningCost + p.dataPreparationCost + p.hardwareCost,
   };
 
+  const savingsVsReference = (referenceCostPerRequest - optimizedCostPerRequest) / referenceCostPerRequest;
+
   return {
-    trainingCost: cTraining,
-    inferencePerRequest: cInferenceOptimized,
-    requestsPerDay: adjustedRequests,
-    dailyInference,
-    totalInference,
+    // Setup / capex
+    totalSetupCost,
+    oneTimeEngineeringCost,
+    recurringEngineeringCost,
+    totalEngineeringCost,
+
+    // Per-request
+    optimizedCostPerRequest,
+    referenceCostPerRequest,
+    savingsPercent: savingsVsReference * 100,
+
+    // Daily / total
+    requestsPerDay: p.requestsPerDay,
+    dailyInferenceCost,
+    dailyTotalCost,
+    totalInferenceCost,
     tco,
+
+    // Break-even
     crossoverDays,
-    cInferenceRequest,
+
+    // Breakdown
     costBreakdown,
+
+    // Effective token counts after optimizations
     tokens: {
       input: finalInputTokens,
       output: finalOutputTokens,
+    },
+
+    // Throughput info (useful for self-hosted analysis)
+    compute: {
+      effectiveThroughput: throughputWithSpecDecoding,
+      inferenceSecondsPerRequest: inferenceSeconds,
     },
   };
 }
 
 export function generateChartData(p: TCOParams) {
   const results = calculateTCO(p);
-  const days = p.days;
-  const points: Array<{ day: number; training: number; inference: number }> = [];
-  const step = Math.max(1, Math.floor(days / 100));
+  const points: Array<{ day: number; cumulativeSetup: number; cumulativeInference: number; cumulativeTotal: number }> = [];
+  const step = Math.max(1, Math.floor(p.days / 100));
 
-  for (let d = 0; d <= days; d += step) {
+  for (let d = 0; d <= p.days; d += step) {
+    const dailyOps = (p.engineeringHoursMonthlyOps * p.costPerHour) / 30.44;
+    const cumulativeInference = (results.dailyInferenceCost + dailyOps) * d;
     points.push({
       day: d,
-      training: results.trainingCost,
-      inference: results.dailyInference * d,
+      cumulativeSetup: results.totalSetupCost,
+      cumulativeInference,
+      cumulativeTotal: results.totalSetupCost + cumulativeInference,
     });
   }
 
