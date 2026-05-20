@@ -1,73 +1,86 @@
-# Welcome to your Lovable project
+# Total Cost of Ownership Estimator
 
-## Project info
+A framework and interactive calculator for estimating the Total Cost of Ownership (TCO) of Large Language Model (LLM) applications.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+This project is developed as part of a master's thesis at University of Helsinki focusing on cost-aware selection and deployment of Large Language Models in production environments.
 
-## How can I edit this code?
+## Purpose
 
-There are several ways of editing your application.
+Deploying LLM-based applications involves significantly more than API token pricing. Real-world costs may include:
 
-**Use Lovable**
+- Inference costs
+- Training and fine-tuning costs
+- GPU and infrastructure costs
+- Retrieval and vector database costs
+- Guardrails and moderation systems
+- Engineering and implementation effort
+- Optimization techniques such as caching, routing, batching, and quantization
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+The goal of this project is to provide a practical framework for:
 
-Changes made via Lovable will be committed automatically to this repo.
+- Comparing different LLM deployment strategies
+- Estimating training vs. inference cost trade-offs
+- Identifying crossover points where inference costs dominate
+- Evaluating the impact of optimization techniques on total cost
 
-**Use your preferred IDE**
+## Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Interactive TCO calculator
+- Training vs. inference crossover visualization
+- Cost breakdown analysis
+- Multiple deployment modes:
+  - API-based models
+  - Cloud-hosted models
+  - Self-hosted models
+- Optimization modeling:
+  - Caching
+  - Model routing
+  - Quantization
+  - Prompt compression
+  - Batching
+  - Speculative decoding
+- Adjustable assumptions and scenario analysis
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Research Context
 
-Follow these steps:
+The framework is informed by:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Scientific literature on LLM inference and deployment
+- AACODS-evaluated grey literature
+- Industry documentation and technical reports
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+The project explores how architectural and optimization decisions affect the total lifecycle cost of LLM systems.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Tech Stack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
 - React
-- shadcn-ui
+- TypeScript
 - Tailwind CSS
+- Recharts
+- Vite
 
-## How can I deploy this project?
+## Status
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Prototype / research project under active development.
 
-## Can I connect a custom domain to my Lovable project?
+The current implementation is intended for experimentation, visualization, and research purposes rather than production-grade financial estimation.
 
-Yes, you can!
+## Thesis Topic
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Cost-Aware Selection and Deployment of Large Language Models
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Focus areas include:
+
+- Total Cost of Ownership (TCO)
+- Inference optimization
+- Cost-performance trade-offs
+- Production deployment considerations
+- LLM system architecture
+
+## License
+
+MIT License
+
+## Contributions
+
+This repository is currently part of an academic research project, but feedback and ideas are welcome.
