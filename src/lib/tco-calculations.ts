@@ -37,7 +37,7 @@ export interface TCOParams {
   // Optimization parameters — all require source justification (see comments)
   cacheHitRate: number;        // 0–100 %
   routingSmallModelShare: number;  // 0–100 %, share routed to cheap model
-  routingCostRatio: number;    // NEW: cheap model cost / expensive model cost
+  routingCostRatio: number;    // NEW: cheap model cost / expensive model cost (replaces hardcoded 0.3)
   tokenReduction: number;      // 0–100 %, prompt compression savings
   fineTuningTokenReduction: number; // 0–100 %, token savings from fine-tuned shorter prompts
 
@@ -62,7 +62,6 @@ export interface TCOParams {
   gpuPrice: number;            // $/hour
 
   // Fine-tuning costs
-  fineTuningCostOpt: number;
   trainingGpuHours: number;
   finetuningCost: number;
   dataPreparationCost: number;
@@ -120,6 +119,15 @@ export const defaultParams: TCOParams = {
   rerankerCostPerReq: 0.0002,
   toolCallsPerRequest: 2,
 
+  // Optimization flags — all default to false (no optimizations applied)
+  caching: false,
+  modelRouting: false,
+  quantization: false,
+  batching: false,
+  promptCompression: false,
+  fineTuningReduction: false,
+  speculativeDecoding: false,
+
   // SGLang (Zheng et al., 2023) §4: ~30% prefix cache hit rate for general chatbot workloads
   cacheHitRate: 30,
 
@@ -152,7 +160,6 @@ export const defaultParams: TCOParams = {
   // Lambda Labs A100 80GB: ~$1.99/hr on-demand; A10G ~$0.76/hr (2024 rates)
   gpuPrice: 1.99,
 
-  fineTuningCostOpt: 0,
   trainingGpuHours: 0,
   finetuningCost: 0,
   dataPreparationCost: 0,
@@ -193,7 +200,10 @@ export function calculateTCO(p: TCOParams) {
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 2: Token-level reductions (prompt compression, fine-tuning only)
+  //
+  // FIX: quantization is REMOVED from token factor.
   // Quantization reduces model size and improves GPU throughput;
+  // it does NOT change the number of tokens sent to/from the model.
   // Source: Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
   // ─────────────────────────────────────────────────────────────────────────
   const compressionFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
@@ -234,7 +244,8 @@ export function calculateTCO(p: TCOParams) {
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 5: Compute cost for self-hosted / cloud-hosted deployments
-  // Quantization affects throughput (tokens/sec).
+  //
+  // FIX: quantization now correctly affects throughput (tokens/sec), not token prices.
   // Formula: cost = (tokens / throughput) × cost_per_second
   // Source: MLCommons MLPerf Inference Benchmark for throughput defaults
   // ─────────────────────────────────────────────────────────────────────────
@@ -276,6 +287,7 @@ export function calculateTCO(p: TCOParams) {
   const cacheFactor = p.caching ? (1 - p.cacheHitRate / 100) : 1;
 
   // Model routing: route share of requests to cheaper model
+  // FIX: routingCostRatio replaces hardcoded 0.3, user-configurable
   // RouteLLM (Ong et al., 2024): 40–60% of queries handleable by smaller model
   // FrugalGPT (Chen et al., 2023): cascade approach for cost/quality tradeoff
   const routingFactor = p.modelRouting
@@ -283,6 +295,7 @@ export function calculateTCO(p: TCOParams) {
     : 1;
 
   // Batching:
+  // FIX: separate API batch discount from self-hosted throughput gain
   // API batch: 50% discount (Anthropic Batch API docs, OpenAI Batch API docs)
   // Self-hosted: continuous batching improves GPU utilization (Kwon et al. 2023 vLLM)
   //   — higher utilization means more requests per GPU-hour, reducing cost/request

@@ -24,86 +24,190 @@ function fmtNum(n: number): string {
   return n.toLocaleString('fi-FI', { maximumFractionDigits: 0 });
 }
 
-function ModelResults({ label, r, days, highlight }: { label: string; r: ReturnType<typeof calculateTCO>; days: number; highlight: boolean }) {
-  const inferencePer10k = r.inferencePerRequest * 10000;
-  const dominant = r.crossoverDays < days
-    ? "Inference costs dominate"
-    : "Training costs dominate";
+function ModelResults({
+  label,
+  r,
+  days,
+  highlight,
+}: {
+  label: string;
+  r: ReturnType<typeof calculateTCO>;
+  days: number;
+  highlight: boolean;
+}) {
+  const inferencePer10k = r.optimizedCostPerRequest * 10000;
+  const dominant =
+    r.crossoverDays < days ? "Inference costs dominate" : "Setup costs dominate";
 
   return (
-    <div className={`space-y-3 ${highlight ? '' : 'opacity-75'}`}>
-      <h3 className="text-xs font-bold uppercase tracking-widest text-primary" style={{ fontFamily: 'var(--font-display)' }}>
+    <div className={`space-y-3 ${highlight ? "" : "opacity-75"}`}>
+      <h3
+        className="text-xs font-bold uppercase tracking-widest text-primary"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
         {label}
       </h3>
+
       <div className="grid grid-cols-2 gap-3">
+        {/* Setup cost replaces old "Training Cost" — includes engineering, hardware, fine-tuning */}
         <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.trainingCost)}</div>
-          <div className="metric-label">Training Cost</div>
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmt(r.totalSetupCost)}
+          </div>
+          <div className="metric-label">Setup Cost (one-time)</div>
         </div>
+
         <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.inferencePerRequest)}</div>
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmt(r.optimizedCostPerRequest)}
+          </div>
           <div className="metric-label">Inference Cost / Request</div>
         </div>
+
         <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(inferencePer10k)}</div>
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmt(inferencePer10k)}
+          </div>
           <div className="metric-label">Inference Cost / 10,000 Req</div>
         </div>
+
         <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmtNum(r.requestsPerDay)}</div>
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmtNum(r.requestsPerDay)}
+          </div>
           <div className="metric-label">Requests per Day</div>
         </div>
+
+        {/* Savings vs unoptimized baseline */}
+        <div className="metric-card">
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {r.savingsPercent.toFixed(1)} %
+          </div>
+          <div className="metric-label">Savings vs Baseline</div>
+        </div>
+
+        <div className="metric-card">
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmt(r.recurringEngineeringCost)}
+          </div>
+          <div className="metric-label">Recurring Ops ({days} days)</div>
+        </div>
+
         <div className="metric-card col-span-2">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}><div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{fmt(r.totalInference)}</div></div>
+          <div
+            className="text-sm font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {fmt(r.totalInferenceCost)}
+          </div>
           <div className="metric-label">Total Inference Cost ({days} days)</div>
         </div>
       </div>
 
+      {/* Crossover indicator */}
       <div className="param-section">
         <div className="flex items-center gap-2">
           <div
             className="w-3 h-3 rounded-full"
-            style={{ background: r.crossoverDays < days ? 'hsl(var(--chart-inference))' : 'hsl(var(--chart-training))' }}
+            style={{
+              background:
+                r.crossoverDays < days
+                  ? "hsl(var(--chart-inference))"
+                  : "hsl(var(--chart-training))",
+            }}
           />
           <span className="text-sm font-medium">{dominant}</span>
         </div>
         {r.crossoverDays < Infinity && (
           <p className="text-xs text-muted-foreground mt-2">
-            Crossover at day {Math.round(r.crossoverDays)} (~{Math.round(r.crossoverDays / 30)} months)
+            Crossover at day {Math.round(r.crossoverDays)} (~
+            {Math.round(r.crossoverDays / 30)} months)
           </p>
         )}
       </div>
 
-      <div className="param-section space-y-2 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-display)' }}>
+      {/* TCO summary */}
+      <div
+        className="param-section space-y-2 text-xs text-muted-foreground"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
         <p className="font-semibold text-foreground text-sm">
           Total TCO ({days} days): {fmt(r.tco)}
+        </p>
+        <p>
+          Engineering (one-time): {fmt(r.oneTimeEngineeringCost)} · Recurring:{" "}
+          {fmt(r.recurringEngineeringCost)}
         </p>
       </div>
     </div>
   );
 }
 
-export function CostPanel({ params1, params2, activeModel, model2Ever, model1Name, model2Name }: Props) {
+export function CostPanel({
+  params1,
+  params2,
+  activeModel,
+  model2Ever,
+  model1Name,
+  model2Name,
+}: Props) {
   const r1 = calculateTCO(params1);
   const r2 = calculateTCO(params2);
   const days = params1.days;
 
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-primary" style={{ fontFamily: 'var(--font-display)' }}>
+      <h2
+        className="text-sm font-bold uppercase tracking-widest text-primary"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
         Cost Calculations
       </h2>
 
       <div className="metric-card">
-        <div className="text-sm font-bold text-foreground" style={{ fontFamily: 'var(--font-display)' }}>{days}</div>
+        <div
+          className="text-sm font-bold text-foreground"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {days}
+        </div>
         <div className="metric-label">Number of Days</div>
       </div>
 
-      <ModelResults label={model1Name} r={r1} days={days} highlight={activeModel === 1} />
+      <ModelResults
+        label={model1Name}
+        r={r1}
+        days={days}
+        highlight={activeModel === 1}
+      />
 
       {model2Ever && (
         <>
           <div className="border-t my-4" />
-          <ModelResults label={model2Name} r={r2} days={days} highlight={activeModel === 2} />
+          <ModelResults
+            label={model2Name}
+            r={r2}
+            days={days}
+            highlight={activeModel === 2}
+          />
         </>
       )}
     </div>
