@@ -62,29 +62,10 @@ export function InputPanel({
   const set = <K extends keyof TCOParams>(key: K, val: TCOParams[K]) =>
     onChange({ ...params, [key]: val });
 
-  // Maps boolean toggle keys to their implementation hours keys
-  // engineeringHoursOneTime accumulates impl hours (one-time cost)
-  const implHoursMap: Partial<Record<keyof TCOParams, keyof TCOParams>> = {
-    vectorDb: "vectorDbImplHours",
-    embeddingGen: "embeddingGenImplHours",
-    rerankingModel: "rerankingImplHours",
-    moderationModel: "moderationImplHours",
-    guardrails: "guardrailsImplHours",
-    toolCalls: "toolCallsImplHours",
-    caching: "cachingImplHours",
-    modelRouting: "routingImplHours",
-    quantization: "quantizationImplHours",
-    batching: "batchingImplHours",
-    promptCompression: "compressionImplHours",
-    fineTuningReduction: "fineTuningImplHours",
-    speculativeDecoding: "specDecodingImplHours",
-  };
+  // tco.ts sums impl hours internally (optimizationImplHours + architectureImplHours).
+  // InputPanel must NOT touch engineeringHoursOneTime when toggling or editing impl hours.
+  // engineeringHoursOneTime is purely the base hours field (e.g. 40h for API, 200h for self-hosted).
 
-  const implHoursValues = new Set<string>(
-    Object.values(implHoursMap) as string[]
-  );
-
-  // Numeric input field — impl hours fields adjust engineeringHoursOneTime
   const numField = (label: string, key: keyof TCOParams, step?: string) => (
     <div className="grid grid-cols-2 items-center gap-2">
       <Label className="param-label">{label}</Label>
@@ -93,52 +74,17 @@ export function InputPanel({
         className="param-input"
         value={params[key] as number}
         step={step || "any"}
-        onChange={(e) => {
-          const newVal = parseFloat(e.target.value) || 0;
-          if (implHoursValues.has(key as string)) {
-            // Impl hours changes are reflected in engineeringHoursOneTime
-            const oldVal = params[key] as number;
-            const delta = newVal - oldVal;
-            onChange({
-              ...params,
-              [key]: newVal,
-              engineeringHoursOneTime: Math.max(
-                0,
-                params.engineeringHoursOneTime + delta
-              ),
-            });
-          } else {
-            set(key, newVal as TCOParams[typeof key]);
-          }
-        }}
+        onChange={(e) => set(key, (parseFloat(e.target.value) || 0) as TCOParams[typeof key])}
       />
     </div>
   );
 
-  // Boolean toggle — adds/removes impl hours from engineeringHoursOneTime
-  const toggle = (
-    label: string,
-    key: keyof TCOParams,
-    disabled = false
-  ) => (
-    <div
-      className={`flex items-center justify-between ${disabled ? "opacity-50" : ""}`}
-    >
+  const toggle = (label: string, key: keyof TCOParams, disabled = false) => (
+    <div className={`flex items-center justify-between ${disabled ? "opacity-50" : ""}`}>
       <Label className="param-label">{label}</Label>
       <Switch
         checked={params[key] as boolean}
-        onCheckedChange={(v) => {
-          const implKey = implHoursMap[key];
-          if (implKey) {
-            const hours = params[implKey] as number;
-            const newOneTime = v
-              ? params.engineeringHoursOneTime + hours
-              : Math.max(0, params.engineeringHoursOneTime - hours);
-            onChange({ ...params, [key]: v, engineeringHoursOneTime: newOneTime });
-          } else {
-            set(key, v as TCOParams[typeof key]);
-          }
-        }}
+        onCheckedChange={(v) => set(key, v as TCOParams[typeof key])}
         disabled={disabled}
       />
     </div>
@@ -237,20 +183,12 @@ export function InputPanel({
                     cloud: 20,
                     "self-hosted": 40,
                   };
-                  // Sum impl hours from currently active toggles
-                  const activeImplHours = Object.entries(implHoursMap).reduce(
-                    (sum, [toggleKey, hoursKey]) => {
-                      if (params[toggleKey as keyof TCOParams]) {
-                        return sum + (params[hoursKey as keyof TCOParams] as number);
-                      }
-                      return sum;
-                    },
-                    0
-                  );
+                  // engineeringHoursOneTime = base hours only.
+                  // impl hours are summed inside tco.ts, not here.
                   onChange({
                     ...params,
                     modelType,
-                    engineeringHoursOneTime: baseOneTimeHours[modelType] + activeImplHours,
+                    engineeringHoursOneTime: baseOneTimeHours[modelType],
                     engineeringHoursMonthlyOps: baseMonthlyOpsHours[modelType],
                     trainingGpuHours: 0,
                     finetuningCost: 0,

@@ -37,9 +37,8 @@ const Index = () => {
       <header className="border-b bg-card px-6 py-3 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-accent" />
         <h1 className="text-base font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-          LLM Total Cost of Ownership
+          LLM Total Cost of Ownership Estimator
         </h1>
-        <span className="text-xs text-muted-foreground ml-2">Calculator</span>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_2fr_3fr] h-[calc(100vh-3.25rem)]">
