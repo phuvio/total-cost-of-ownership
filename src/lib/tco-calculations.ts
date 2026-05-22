@@ -452,5 +452,69 @@ export function generateChartData(p: TCOParams) {
     });
   }
 
-  return { points, crossoverDays: results.crossoverDays, results };
+  return { points, results };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CROSS-MODEL BREAK-EVEN
+//
+// Returns the day at which model2 becomes cheaper than model1, or null if:
+//   - the lines are parallel (same daily cost)
+//   - the crossover already happened before day 0 (one model always cheaper)
+//
+// Formula:
+//   setup1 + dailyTotal1 × d = setup2 + dailyTotal2 × d
+//   d = (setup2 - setup1) / (dailyTotal1 - dailyTotal2)
+// ─────────────────────────────────────────────────────────────────────────────
+export function crossoverBetweenModels(
+  p1: TCOParams,
+  p2: TCOParams
+): {
+  crossoverDay: number | null;
+  // Which model is cheaper after crossover (or always, if no crossover)
+  cheaperModel: 1 | 2 | 'equal';
+  // Explanation string for UI
+  reason: string;
+} {
+  const r1 = calculateTCO(p1);
+  const r2 = calculateTCO(p2);
+ 
+  const dailyDiff = r1.dailyTotalCost - r2.dailyTotalCost;
+  const setupDiff = r2.totalSetupCost - r1.totalSetupCost;
+ 
+  // Lines parallel — same daily cost
+  if (Math.abs(dailyDiff) < 0.001) {
+    const cheaperModel = r1.totalSetupCost < r2.totalSetupCost ? 1
+      : r1.totalSetupCost > r2.totalSetupCost ? 2
+      : 'equal';
+    return {
+      crossoverDay: null,
+      cheaperModel,
+      reason: cheaperModel === 'equal'
+        ? 'Models have identical costs'
+        : `Model ${cheaperModel} has lower setup cost and equal daily cost — always cheaper`,
+    };
+  }
+ 
+  const d = setupDiff / dailyDiff;
+ 
+  // Crossover in the past — one model is always cheaper
+  if (d < 0) {
+    const cheaperModel = r1.dailyTotalCost < r2.dailyTotalCost ? 1 : 2;
+    return {
+      crossoverDay: null,
+      cheaperModel,
+      reason: `Model ${cheaperModel} has both lower setup and lower daily cost — always cheaper`,
+    };
+  }
+ 
+  // Valid future crossover
+  // Before crossover: model with lower setup is cheaper
+  // After crossover: model with lower daily cost is cheaper
+  const cheaperAfter = r1.dailyTotalCost < r2.dailyTotalCost ? 1 : 2;
+  return {
+    crossoverDay: Math.round(d),
+    cheaperModel: cheaperAfter,
+    reason: `Model ${cheaperAfter} becomes cheaper after day ${Math.round(d)} (~${(d / 30).toFixed(1)} months)`,
+  };
 }

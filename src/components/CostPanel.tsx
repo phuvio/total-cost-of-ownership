@@ -1,4 +1,4 @@
-import { calculateTCO, TCOParams } from "@/lib/tco-calculations";
+import { calculateTCO, crossoverBetweenModels, TCOParams } from "@/lib/tco-calculations";
 
 interface Props {
   params1: TCOParams;
@@ -36,8 +36,6 @@ function ModelResults({
   highlight: boolean;
 }) {
   const inferencePer10k = r.optimizedCostPerRequest * 10000;
-  const dominant =
-    r.crossoverDays < days ? "Inference costs dominate" : "Setup costs dominate";
 
   return (
     <div className={`space-y-3 ${highlight ? "" : "opacity-75"}`}>
@@ -49,106 +47,57 @@ function ModelResults({
       </h3>
 
       <div className="grid grid-cols-2 gap-3">
-        {/* Setup cost replaces old "Training Cost" — includes engineering, hardware, fine-tuning */}
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(r.totalSetupCost)}
           </div>
           <div className="metric-label">Setup Cost (one-time)</div>
         </div>
 
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(r.optimizedCostPerRequest)}
           </div>
           <div className="metric-label">Inference Cost / Request</div>
         </div>
 
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(inferencePer10k)}
           </div>
           <div className="metric-label">Inference Cost / 10,000 Req</div>
         </div>
 
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmtNum(r.requestsPerDay)}
           </div>
           <div className="metric-label">Requests per Day</div>
         </div>
 
-        {/* Savings vs unoptimized baseline */}
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {r.savingsPercent.toFixed(1)} %
           </div>
           <div className="metric-label">Savings vs Baseline</div>
         </div>
 
         <div className="metric-card">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(r.recurringEngineeringCost)}
           </div>
           <div className="metric-label">Recurring Ops ({days} days)</div>
         </div>
 
         <div className="metric-card col-span-2">
-          <div
-            className="text-sm font-bold text-foreground"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(r.totalInferenceCost)}
           </div>
           <div className="metric-label">Total Inference Cost ({days} days)</div>
         </div>
       </div>
 
-      {/* Crossover indicator */}
-      <div className="param-section">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{
-              background:
-                r.crossoverDays < days
-                  ? "hsl(var(--chart-inference))"
-                  : "hsl(var(--chart-training))",
-            }}
-          />
-          <span className="text-sm font-medium">{dominant}</span>
-        </div>
-        {r.crossoverDays < Infinity && (
-          <p className="text-xs text-muted-foreground mt-2">
-            Crossover at day {Math.round(r.crossoverDays)} (~
-            {Math.round(r.crossoverDays / 30)} months)
-          </p>
-        )}
-      </div>
-
-      {/* TCO summary */}
-      <div
-        className="param-section space-y-2 text-xs text-muted-foreground"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
+      <div className="param-section space-y-2 text-xs text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
         <p className="font-semibold text-foreground text-sm">
           Total TCO ({days} days): {fmt(r.tco)}
         </p>
@@ -173,6 +122,9 @@ export function CostPanel({
   const r2 = calculateTCO(params2);
   const days = params1.days;
 
+  // Break-even between models — only computed when both are active
+  const crossover = model2Ever ? crossoverBetweenModels(params1, params2) : null;
+
   return (
     <div className="p-6 space-y-6">
       <h2
@@ -183,33 +135,42 @@ export function CostPanel({
       </h2>
 
       <div className="metric-card">
-        <div
-          className="text-sm font-bold text-foreground"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
+        <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
           {days}
         </div>
         <div className="metric-label">Number of Days</div>
       </div>
 
-      <ModelResults
-        label={model1Name}
-        r={r1}
-        days={days}
-        highlight={activeModel === 1}
-      />
+      {/* Break-even summary — shown only when comparing two models */}
+      {crossover && (
+        <div
+          className="param-section text-xs space-y-1"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          <p className="font-semibold text-foreground text-sm">Break-even</p>
+          {crossover.crossoverDay !== null ? (
+            <>
+              <p className="text-muted-foreground">
+                Day <span className="font-semibold text-foreground">{crossover.crossoverDay}</span>
+                {" "}(~{(crossover.crossoverDay / 30).toFixed(1)} months)
+              </p>
+              <p className="text-muted-foreground">{crossover.reason}</p>
+            </>
+          ) : (
+            <p className="text-muted-foreground">{crossover.reason}</p>
+          )}
+        </div>
+      )}
+
+      <ModelResults label={model1Name} r={r1} days={days} highlight={activeModel === 1} />
 
       {model2Ever && (
         <>
           <div className="border-t my-4" />
-          <ModelResults
-            label={model2Name}
-            r={r2}
-            days={days}
-            highlight={activeModel === 2}
-          />
+          <ModelResults label={model2Name} r={r2} days={days} highlight={activeModel === 2} />
         </>
       )}
     </div>
   );
 }
+

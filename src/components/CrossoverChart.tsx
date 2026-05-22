@@ -1,4 +1,4 @@
-import { generateChartData, calculateTCO, TCOParams } from "@/lib/tco-calculations";
+import { generateChartData, crossoverBetweenModels, TCOParams } from "@/lib/tco-calculations";
 import {
   Area, CartesianGrid, Legend, ResponsiveContainer, Tooltip,
   XAxis, YAxis, ReferenceLine, Line, ComposedChart, PieChart, Pie, Cell,
@@ -148,15 +148,17 @@ export function CrossoverChart({
   const data1 = generateChartData(params1);
   const data2 = generateChartData(params2);
 
-  // calculateTCO used separately for pie chart costBreakdown
-  // (generateChartData already calls calculateTCO internally via results)
   const showBoth = model2Ever;
-  const activeData = activeModel === 1 ? data1 : data2;
   const maxDays = params1.days;
 
-  // Build merged chart points using updated field names:
-  // totalSetupCost replaces trainingCost
-  // dailyTotalCost replaces dailyInference (includes ops cost)
+  // Cross-model break-even: day where model2 total cumulative cost = model1 total cumulative cost
+  // Only shown when both models are active
+  const crossover = showBoth
+    ? crossoverBetweenModels(params1, params2)
+    : null;
+
+  // Chart shows four lines: setup cost (flat) + cumulative inference per model
+  // This makes it easy to see how inference accumulates vs setup
   const mergedPoints: Array<Record<string, number>> = [];
   const step = Math.max(1, Math.floor(maxDays / 100));
 
@@ -171,13 +173,10 @@ export function CrossoverChart({
     mergedPoints.push(point);
   }
 
-  const isModel1Active = activeModel === 1;
-
-  // Tooltip label mapping updated to match new point keys
   const tooltipLabels: Record<string, string> = {
-    m1Setup: `${model1Name} Setup`,
+    m1Setup: `${model1Name} Setup Cost`,
     m1Inference: `${model1Name} Cumulative Inference`,
-    m2Setup: `${model2Name} Setup`,
+    m2Setup: `${model2Name} Setup Cost`,
     m2Inference: `${model2Name} Cumulative Inference`,
   };
 
@@ -187,10 +186,10 @@ export function CrossoverChart({
         className="text-sm font-bold uppercase tracking-widest text-primary"
         style={{ fontFamily: 'var(--font-display)' }}
       >
-        Cost Breakdown & Crossover Point
+        Cost Breakdown & Break-even
       </h2>
 
-      {/* Pie charts — show total cost breakdown over full period */}
+      {/* Pie charts */}
       <div className="flex gap-4 flex-wrap">
         <CostPieChart
           title={`${model1Name} — Total Cost Breakdown`}
@@ -204,7 +203,24 @@ export function CrossoverChart({
         )}
       </div>
 
-      {/* Crossover line chart */}
+      {/* Break-even summary badge — only shown when both models visible */}
+      {showBoth && crossover && (
+        <div
+          className="text-xs px-3 py-2 rounded-md border"
+          style={{
+            fontFamily: 'var(--font-display)',
+            background: 'var(--color-background-secondary)',
+            borderColor: 'var(--color-border-secondary)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          {crossover.crossoverDay !== null
+            ? `Break-even: Day ${crossover.crossoverDay} (~${(crossover.crossoverDay / 30).toFixed(1)} months) — ${crossover.reason}`
+            : crossover.reason}
+        </div>
+      )}
+
+      {/* Cumulative total cost chart */}
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
@@ -254,94 +270,79 @@ export function CrossoverChart({
               }}
             />
             <Tooltip
-              formatter={(v: number, name: string) => [
-                fmtAxis(v),
-                tooltipLabels[name] || name,
-              ]}
+              formatter={(v: number, name: string) => [fmtAxis(v), tooltipLabels[name] || name]}
               labelFormatter={(l) => `Day ${l}`}
-              contentStyle={{
-                fontSize: 12,
-                fontFamily: 'var(--font-display)',
-                borderRadius: 8,
-              }}
+              contentStyle={{ fontSize: 12, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
             <Legend wrapperStyle={{ fontSize: 13, fontFamily: 'var(--font-display)' }} />
 
-            {/* Model 1 — active = filled area, inactive = thin line */}
-            {isModel1Active ? (
+            {/* Render inactive model first (behind), active model last (on top) */}
+            {activeModel === 1 ? (
               <>
-                <Area type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" fill="url(#setupGradM1)" strokeWidth={2} name={`${model1Name} Setup`} />
-                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name={`${model1Name} Inference`} />
+                {showBoth && (
+                  <>
+                    <Line type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Setup`} dot={false} />
+                    <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Inference`} dot={false} />
+                  </>
+                )}
+                <Area type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" fill="url(#setupGradM1)" strokeWidth={2.5} name={`${model1Name} Setup`} dot={false} />
+                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2.5} name={`${model1Name} Inference`} dot={false} />
               </>
             ) : (
               <>
-                <Line type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name={`${model1Name} Setup`} />
-                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.4} dot={false} name={`${model1Name} Inference`} />
+                <Line type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" strokeWidth={2} strokeOpacity={0.5} name={`${model1Name} Setup`} dot={false} />
+                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={2} strokeOpacity={0.5} name={`${model1Name} Inference`} dot={false} />
+                <Area type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" fill="url(#setupGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Setup`} dot={false} />
+                <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Inference`} dot={false} />
               </>
             )}
 
-            {/* Model 2 */}
-            {showBoth && (
-              isModel1Active ? (
-                <>
-                  <Line type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name={`${model2Name} Setup`} />
-                  <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeOpacity={0.5} strokeDasharray="8 4" dot={false} name={`${model2Name} Inference`} />
-                </>
-              ) : (
-                <>
-                  <Area type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" fill="url(#setupGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Setup`} />
-                  <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Inference`} />
-                </>
-              )
-            )}
-
-            {/* Crossover reference line for active model */}
-            {Number.isFinite(activeData.crossoverDays) && activeData.crossoverDays >= 0 ? (
+            {/* Break-even between models — only when crossover exists within period */}
+            {showBoth && crossover?.crossoverDay !== null && crossover?.crossoverDay !== undefined && crossover.crossoverDay >= 0 && crossover.crossoverDay <= maxDays && (
               <ReferenceLine
-                x={Math.max(1, Math.round(activeData.crossoverDays))}
+                x={crossover.crossoverDay}
                 stroke="hsl(var(--foreground))"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Crossover: Day ${Math.max(1, Math.round(activeData.crossoverDays))}`,
+                  value: `Break-even: Day ${crossover.crossoverDay}`,
                   position: 'insideTop',
                   offset: 20,
-                  style: {
-                    fontSize: 12,
-                    fontFamily: 'var(--font-display)',
-                    fill: 'hsl(var(--foreground))',
-                  },
+                  style: { fontSize: 12, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
                 }}
               />
-            ) : null}
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
       {/* Legend */}
-      <div
-        className="flex gap-3 text-xs flex-wrap"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
+      <div className="flex gap-3 text-xs flex-wrap" style={{ fontFamily: 'var(--font-display)' }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.5)' }} />
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(0, 72%, 60%, 0.6)' }} />
           <span className="text-muted-foreground">{model1Name} Setup</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.5)' }} />
+          <div className="w-3 h-3 rounded" style={{ background: 'hsl(160, 60%, 45%, 0.6)' }} />
           <span className="text-muted-foreground">{model1Name} Inference</span>
         </div>
         {showBoth && (
           <>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded" style={{ background: 'hsl(280, 65%, 55%, 0.5)' }} />
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(280, 65%, 55%, 0.6)' }} />
               <span className="text-muted-foreground">{model2Name} Setup</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded" style={{ background: 'hsl(45, 85%, 55%, 0.5)' }} />
+              <div className="w-3 h-3 rounded" style={{ background: 'hsl(45, 85%, 55%, 0.6)' }} />
               <span className="text-muted-foreground">{model2Name} Inference</span>
             </div>
           </>
+        )}
+        {showBoth && crossover?.crossoverDay !== null && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: 'hsl(var(--foreground))' }} />
+            <span className="text-muted-foreground">Break-even point</span>
+          </div>
         )}
       </div>
     </div>
