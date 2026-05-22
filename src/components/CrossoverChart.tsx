@@ -220,13 +220,75 @@ export function CrossoverChart({
         </div>
       )}
 
-      {/* Cumulative total cost chart */}
-      <div className="flex-1 min-h-0">
+      
+      {/* CHART 1: Cumulative total per model — easy to compare who is cheaper */}
+      <div style={{ height: '300px' }}>
+        <p className="text-xs font-medium text-muted-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+          Cumulative total cost — {showBoth ? 'model comparison' : model1Name}
+        </p>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={mergedPoints}
-            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+            data={mergedPoints.map(p => ({
+              ...p,
+              m1CumTotal: p.m1Setup + p.m1Inference,
+              ...(showBoth ? { m2CumTotal: p.m2Setup + p.m2Inference } : {}),
+            }))}
+            margin={{ top: 4, right: 10, left: 10, bottom: 0 }}
           >
+            <defs>
+              <linearGradient id="cumGradM1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="hsl(160, 60%, 45%)" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="cumGradM2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="hsl(280, 65%, 55%)" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+            <XAxis
+              dataKey="day"
+              type="number"
+              domain={[0, maxDays]}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }}
+              label={{ value: 'Days', position: 'insideBottom', offset: -4, style: { fontSize: 11, fontFamily: 'var(--font-display)' } }}
+            />
+            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} width={48} />
+            <Tooltip
+              formatter={(v: number, name: string) => [fmtAxis(v), name]}
+              labelFormatter={(l) => `Day ${l}`}
+              contentStyle={{ fontSize: 11, fontFamily: 'var(--font-display)', borderRadius: 8 }}
+            />
+            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <Area type="monotone" dataKey="m1CumTotal" stroke="hsl(160, 60%, 45%)" fill="url(#cumGradM1)" strokeWidth={2.5} name={`${model1Name} Total`} dot={false} />
+            {showBoth && (
+              <Area type="monotone" dataKey="m2CumTotal" stroke="hsl(280, 65%, 55%)" fill="url(#cumGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Total`} dot={false} />
+            )}
+            {showBoth && crossover?.crossoverDay !== null && crossover?.crossoverDay !== undefined && crossover.crossoverDay >= 0 && crossover.crossoverDay <= maxDays && (
+              <ReferenceLine
+                x={crossover.crossoverDay}
+                stroke="hsl(var(--foreground))"
+                strokeDasharray="4 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Break-even: Day ${crossover.crossoverDay}`,
+                  position: 'insideTop',
+                  offset: 8,
+                  style: { fontSize: 11, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
+                }}
+              />
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* CHART 2: Setup vs Inference breakdown per model */}
+      <div style={{ height: '320px' }}>
+        <p className="text-xs font-medium text-muted-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+          Cost breakdown — setup vs. inference
+        </p>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={mergedPoints} margin={{ top: 4, right: 10, left: 10, bottom: 0 }}>
             <defs>
               <linearGradient id="setupGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.3} />
@@ -245,72 +307,33 @@ export function CrossoverChart({
                 <stop offset="95%" stopColor="hsl(45, 85%, 55%)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
-
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis
-              dataKey="day"
-              type="number"
-              domain={[0, maxDays]}
-              tick={{ fontSize: 12, fontFamily: 'var(--font-display)' }}
-              label={{
-                value: 'Days',
-                position: 'insideBottom',
-                offset: -5,
-                style: { fontSize: 12, fontFamily: 'var(--font-display)' },
-              }}
-            />
-            <YAxis
-              tickFormatter={fmtAxis}
-              tick={{ fontSize: 12, fontFamily: 'var(--font-display)' }}
-              label={{
-                value: 'Cost (€)',
-                angle: -90,
-                position: 'insideLeft',
-                style: { fontSize: 12, fontFamily: 'var(--font-display)' },
-              }}
-            />
+            <XAxis dataKey="day" type="number" domain={[0, maxDays]} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
               formatter={(v: number, name: string) => [fmtAxis(v), tooltipLabels[name] || name]}
               labelFormatter={(l) => `Day ${l}`}
-              contentStyle={{ fontSize: 12, fontFamily: 'var(--font-display)', borderRadius: 8 }}
+              contentStyle={{ fontSize: 11, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 13, fontFamily: 'var(--font-display)' }} />
-
-            {/* Render inactive model first (behind), active model last (on top) */}
+            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
             {activeModel === 1 ? (
               <>
                 {showBoth && (
                   <>
-                    <Line type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" strokeWidth={2} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Setup`} dot={false} />
-                    <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={2} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Inference`} dot={false} />
+                    <Line type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" strokeWidth={1.5} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Setup`} dot={false} />
+                    <Line type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" strokeWidth={1.5} strokeDasharray="8 4" strokeOpacity={0.5} name={`${model2Name} Inference`} dot={false} />
                   </>
                 )}
-                <Area type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" fill="url(#setupGradM1)" strokeWidth={2.5} name={`${model1Name} Setup`} dot={false} />
-                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2.5} name={`${model1Name} Inference`} dot={false} />
+                <Area type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" fill="url(#setupGradM1)" strokeWidth={2} name={`${model1Name} Setup`} dot={false} />
+                <Area type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" fill="url(#inferenceGradM1)" strokeWidth={2} name={`${model1Name} Inference`} dot={false} />
               </>
             ) : (
               <>
-                <Line type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" strokeWidth={2} strokeOpacity={0.5} name={`${model1Name} Setup`} dot={false} />
-                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={2} strokeOpacity={0.5} name={`${model1Name} Inference`} dot={false} />
-                <Area type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" fill="url(#setupGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Setup`} dot={false} />
-                <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Inference`} dot={false} />
+                <Line type="monotone" dataKey="m1Setup" stroke="hsl(0, 72%, 60%)" strokeWidth={1.5} strokeOpacity={0.5} name={`${model1Name} Setup`} dot={false} />
+                <Line type="monotone" dataKey="m1Inference" stroke="hsl(160, 60%, 45%)" strokeWidth={1.5} strokeOpacity={0.5} name={`${model1Name} Inference`} dot={false} />
+                <Area type="monotone" dataKey="m2Setup" stroke="hsl(280, 65%, 55%)" fill="url(#setupGradM2)" strokeWidth={2} strokeDasharray="8 4" name={`${model2Name} Setup`} dot={false} />
+                <Area type="monotone" dataKey="m2Inference" stroke="hsl(45, 85%, 55%)" fill="url(#inferenceGradM2)" strokeWidth={2} strokeDasharray="8 4" name={`${model2Name} Inference`} dot={false} />
               </>
-            )}
-
-            {/* Break-even between models — only when crossover exists within period */}
-            {showBoth && crossover?.crossoverDay !== null && crossover?.crossoverDay !== undefined && crossover.crossoverDay >= 0 && crossover.crossoverDay <= maxDays && (
-              <ReferenceLine
-                x={crossover.crossoverDay}
-                stroke="hsl(var(--foreground))"
-                strokeDasharray="4 4"
-                strokeWidth={1.5}
-                label={{
-                  value: `Break-even: Day ${crossover.crossoverDay}`,
-                  position: 'insideTop',
-                  offset: 20,
-                  style: { fontSize: 12, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
-                }}
-              />
             )}
           </ComposedChart>
         </ResponsiveContainer>
