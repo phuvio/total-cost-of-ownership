@@ -56,13 +56,6 @@ function ModelResults({
 
         <div className="metric-card">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(r.optimizedCostPerRequest)}
-          </div>
-          <div className="metric-label">Inference Cost / Request</div>
-        </div>
-
-        <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
             {fmt(inferencePer10k)}
           </div>
           <div className="metric-label">Inference Cost / 10,000 Req</div>
@@ -73,13 +66,6 @@ function ModelResults({
             {fmtNum(r.requestsPerDay)}
           </div>
           <div className="metric-label">Requests per Day</div>
-        </div>
-
-        <div className="metric-card">
-          <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {r.savingsPercent.toFixed(1)} %
-          </div>
-          <div className="metric-label">Savings vs Baseline</div>
         </div>
 
         <div className="metric-card">
