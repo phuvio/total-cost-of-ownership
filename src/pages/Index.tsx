@@ -48,7 +48,7 @@ const Index = () => {
           </TabsList>
         </div>
 
-        <div className="h-[calc(100vh-7.5rem)] overflow-auto">
+        <div className="h-[calc(100vh-7.5rem)]">
           <TabsContent value="calculator">
             <CalculatorPage
               params1={params1}

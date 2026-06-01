@@ -17,7 +17,7 @@ export function SensitivityPage({
   model2Ever,
 }: SensitivityPageProps) {
   return (
-    <div className="p-6">
+    <div className="p-6 overflow-y-auto h-[calc(100vh-7.5rem)]">
       <div className="rounded-2xl border bg-card p-6">
         <SensitivityPanel
           params1={params1}
