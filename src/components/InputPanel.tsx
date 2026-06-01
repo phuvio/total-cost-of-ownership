@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -91,8 +90,7 @@ export function InputPanel({
   );
 
   return (
-    <ScrollArea className="h-[calc(100vh-4rem)]">
-      <div className="p-4 space-y-1">
+    <div className="p-4 space-y-1">
         <h2
           className="text-sm font-bold uppercase tracking-widest text-primary mb-4"
           style={{ fontFamily: "var(--font-display)" }}
@@ -359,6 +357,5 @@ export function InputPanel({
           Reset Parameters
         </button>
       </div>
-    </ScrollArea>
   );
 }
