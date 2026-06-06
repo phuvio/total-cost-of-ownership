@@ -1,8 +1,10 @@
-import { generateChartData, crossoverBetweenModels, TCOParams } from "@/lib/tco-calculations";
+import { calculateTCO, TCOParams } from "@/lib/tco-calculations";
+import { useMemo, useState } from "react";
 import {
   Area, CartesianGrid, Legend, ResponsiveContainer, Tooltip,
   XAxis, YAxis, ReferenceLine, Line, ComposedChart, PieChart, Pie, Cell,
 } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Props {
   params1: TCOParams;
@@ -53,6 +55,99 @@ const PIE_LABELS: Record<string, string> = {
   engineeringRecurring: 'Eng. (recurring)',
   trainingAndSetup: 'Training & Setup',
 };
+
+type XAxisKey = "days" | "requestsPerDay" | "cacheHitRate" | "costPerHour";
+
+const X_AXIS_OPTIONS: { value: XAxisKey; label: string; unit: string; min: number; max: number; step: number }[] = [
+  { value: "days",           label: "Days",                    unit: "days", min: 0,   max: 365,   step: 1 },
+  { value: "requestsPerDay", label: "Requests per day",       unit: "req",  min: 500, max: 100000, step: 500 },
+  { value: "cacheHitRate",   label: "Cache hit rate",         unit: "%",   min: 0,   max: 90,    step: 5 },
+  { value: "costPerHour",    label: "Engineering cost / hour", unit: "€",   min: 50,  max: 500,   step: 10 },
+];
+
+const N_POINTS = 40;
+
+interface ChartPoint {
+  x: number;
+  setup: number;
+  inference: number;
+  total: number;
+}
+
+function buildChartPoints(params: TCOParams, xKey: XAxisKey, xMin: number, xMax: number) {
+  const points: ChartPoint[] = [];
+  const step = (xMax - xMin) / (N_POINTS - 1);
+  const baseParams = xKey === "cacheHitRate"
+    ? { ...params, caching: true }
+    : params;
+
+  for (let i = 0; i < N_POINTS; i++) {
+    const x = xMin + i * step;
+    const p = { ...baseParams, [xKey]: x } as TCOParams;
+    const results = calculateTCO(p);
+
+    points.push({
+      x: Math.round(x * 100) / 100,
+      setup: results.totalSetupCost,
+      inference: results.totalInferenceCost,
+      total: results.tco,
+    });
+  }
+
+  return points;
+}
+
+function findCrossover(pts1: ChartPoint[], pts2: ChartPoint[]) {
+  for (let i = 1; i < pts1.length; i++) {
+    const d0 = pts1[i - 1].total - pts2[i - 1].total;
+    const d1 = pts1[i].total - pts2[i].total;
+    if (d0 === 0) return pts1[i - 1].x;
+    if (d0 * d1 < 0) {
+      return Math.round(((pts1[i - 1].x + pts1[i].x) / 2) * 100) / 100;
+    }
+  }
+  return null;
+}
+
+function formatXAxisValue(value: number, xKey: XAxisKey) {
+  if (xKey === "requestsPerDay") {
+    return value >= 1000 ? `${Math.round(value / 100) / 10}k` : `${Math.round(value)}`;
+  }
+  if (xKey === "cacheHitRate") {
+    return `${Math.round(value)}%`;
+  }
+  if (xKey === "costPerHour") {
+    return `€${Math.round(value)}`;
+  }
+  return `${Math.round(value)}`;
+}
+
+function getCrossoverSummary(
+  crossover: number | null,
+  pts1: ChartPoint[],
+  pts2: ChartPoint[],
+  xKey: XAxisKey,
+  model1Name: string,
+  model2Name: string,
+) {
+  if (crossover !== null) {
+    return `Break-even: ${formatXAxisValue(crossover, xKey)} — models have equal total cost there`;
+  }
+
+  const firstDiff = pts1[0].total - pts2[0].total;
+  const lastDiff = pts1[pts1.length - 1].total - pts2[pts2.length - 1].total;
+  if (Math.abs(firstDiff) < 1 && Math.abs(lastDiff) < 1) {
+    return 'Models have almost identical costs across the selected range';
+  }
+
+  const cheaperModel = firstDiff < 0 ? model1Name : model2Name;
+  const consistent = (firstDiff < 0 && lastDiff < 0) || (firstDiff > 0 && lastDiff > 0);
+  if (consistent) {
+    return `${cheaperModel} is cheaper across the selected ${xKey} range`;
+  }
+
+  return `No clear crossover detected across the selected ${xKey} range`;
+}
 
 const CHART_FONT_SIZE = 'var(--chart-font-size)';
 
@@ -147,66 +242,128 @@ export function CrossoverChart({
   model1Name,
   model2Name,
 }: Props) {
-  const data1 = generateChartData(params1);
-  const data2 = generateChartData(params2);
-
+  const [xAxisKey, setXAxisKey] = useState<XAxisKey>("days");
   const showBoth = model2Ever;
-  const maxDays = params1.days;
+  const results1 = calculateTCO(params1);
+  const results2 = calculateTCO(params2);
 
-  // Cross-model break-even: day where model2 total cumulative cost = model1 total cumulative cost
-  // Only shown when both models are active
-  const crossover = showBoth
-    ? crossoverBetweenModels(params1, params2)
-    : null;
-
-  // Chart shows four lines: setup cost (flat) + cumulative inference per model
-  // This makes it easy to see how inference accumulates vs setup
-  const mergedPoints: Array<Record<string, number>> = [];
-  const step = Math.max(1, Math.floor(maxDays / 100));
-
-  for (let d = 0; d <= maxDays; d += step) {
-    const point: Record<string, number> = { day: d };
-    point.m1Setup = data1.results.totalSetupCost;
-    point.m1Inference = data1.results.dailyTotalCost * d;
-    if (showBoth) {
-      point.m2Setup = data2.results.totalSetupCost;
-      point.m2Inference = data2.results.dailyTotalCost * d;
+  const xAxisOption = X_AXIS_OPTIONS.find((option) => option.value === xAxisKey)!;
+  const xRange = useMemo(() => {
+    if (xAxisKey === "days") {
+      return { min: 0, max: Math.max(params1.days, params2.days, 1) };
     }
-    mergedPoints.push(point);
-  }
+
+    if (xAxisKey === "requestsPerDay") {
+      return {
+        min: Math.min(xAxisOption.min, params1.requestsPerDay, params2.requestsPerDay),
+        max: Math.max(xAxisOption.max, params1.requestsPerDay, params2.requestsPerDay),
+      };
+    }
+
+    if (xAxisKey === "cacheHitRate") {
+      return {
+        min: 0,
+        max: Math.max(xAxisOption.max, params1.cacheHitRate, params2.cacheHitRate),
+      };
+    }
+
+    return {
+      min: Math.min(xAxisOption.min, params1.costPerHour, params2.costPerHour),
+      max: Math.max(xAxisOption.max, params1.costPerHour, params2.costPerHour),
+    };
+  }, [xAxisKey, xAxisOption.max, xAxisOption.min, params1, params2]);
+
+  const points1 = useMemo(
+    () => buildChartPoints(params1, xAxisKey, xRange.min, xRange.max),
+    [params1, xAxisKey, xRange],
+  );
+
+  const points2 = useMemo(
+    () => (showBoth ? buildChartPoints(params2, xAxisKey, xRange.min, xRange.max) : []),
+    [params2, showBoth, xAxisKey, xRange],
+  );
+
+  const chartData = useMemo(
+    () => points1.map((point, index) => ({
+      x: point.x,
+      m1Setup: point.setup,
+      m1Inference: point.inference,
+      m1Total: point.total,
+      ...(showBoth && points2[index]
+        ? {
+            m2Setup: points2[index].setup,
+            m2Inference: points2[index].inference,
+            m2Total: points2[index].total,
+          }
+        : {}),
+    })),
+    [points1, points2, showBoth],
+  );
+
+  const crossoverValue = useMemo(
+    () => (showBoth ? findCrossover(points1, points2) : null),
+    [points1, points2, showBoth],
+  );
+
+  const crossoverReason = useMemo(
+    () =>
+      showBoth
+        ? getCrossoverSummary(crossoverValue, points1, points2, xAxisKey, model1Name, model2Name)
+        : null,
+    [crossoverValue, points1, points2, xAxisKey, model1Name, model2Name, showBoth],
+  );
 
   const tooltipLabels: Record<string, string> = {
     m1Setup: `${model1Name} Setup Cost`,
-    m1Inference: `${model1Name} Cumulative Inference`,
+    m1Inference: `${model1Name} Total Inference Cost`,
     m2Setup: `${model2Name} Setup Cost`,
-    m2Inference: `${model2Name} Cumulative Inference`,
+    m2Inference: `${model2Name} Total Inference Cost`,
   };
 
   return (
     <div className="p-6 space-y-4 h-full flex flex-col">
-      <h2
-        className="text-sm font-bold uppercase tracking-widest text-primary"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
-        Cost Breakdown & Break-even
-      </h2>
+      <div className="flex flex-wrap items-center gap-3">
+        <h2
+          className="text-sm font-bold uppercase tracking-widest text-primary"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Cost Breakdown & Break-even
+        </h2>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" style={{ fontFamily: 'var(--font-display)' }}>
+            X-axis:
+          </span>
+          <Select value={xAxisKey} onValueChange={(value) => setXAxisKey(value as XAxisKey)}>
+            <SelectTrigger className="param-input h-9 min-w-[180px]">
+              <SelectValue placeholder="Select axis" />
+            </SelectTrigger>
+            <SelectContent>
+              {X_AXIS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Pie charts */}
       <div className="flex gap-4 flex-wrap">
         <CostPieChart
           title={`${model1Name} — Total Cost Breakdown`}
-          breakdown={data1.results.costBreakdown}
+          breakdown={results1.costBreakdown}
         />
         {showBoth && (
           <CostPieChart
             title={`${model2Name} — Total Cost Breakdown`}
-            breakdown={data2.results.costBreakdown}
+            breakdown={results2.costBreakdown}
           />
         )}
       </div>
 
       {/* Break-even summary badge — only shown when both models visible */}
-      {showBoth && crossover && (
+      {showBoth && crossoverReason && (
         <div
           className="text-xs px-3 py-2 rounded-md border"
           style={{
@@ -216,25 +373,19 @@ export function CrossoverChart({
             color: 'var(--color-text-secondary)',
           }}
         >
-          {crossover.crossoverDay !== null
-            ? `Break-even: Day ${crossover.crossoverDay} (~${(crossover.crossoverDay / 30).toFixed(1)} months) — ${crossover.reason}`
-            : crossover.reason}
+          {crossoverReason}
         </div>
       )}
 
       
-      {/* CHART 1: Cumulative total per model — easy to compare who is cheaper */}
+      {/* CHART 1: Total cost per selected x-axis variable */}
       <div style={{ height: '300px' }}>
         <p className="text-xs font-medium text-muted-foreground mb-1" style={{ fontFamily: 'var(--font-display)' }}>
-          Cumulative total cost — {showBoth ? 'model comparison' : model1Name}
+          Total cost — {showBoth ? 'model comparison' : model1Name}
         </p>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={mergedPoints.map(p => ({
-              ...p,
-              m1CumTotal: p.m1Setup + p.m1Inference,
-              ...(showBoth ? { m2CumTotal: p.m2Setup + p.m2Inference } : {}),
-            }))}
+            data={chartData}
             margin={{ top: 4, right: 10, left: 10, bottom: 0 }}
           >
             <defs>
@@ -249,31 +400,32 @@ export function CrossoverChart({
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
             <XAxis
-              dataKey="day"
+              dataKey="x"
               type="number"
-              domain={[0, maxDays]}
+              domain={[xRange.min, xRange.max]}
               tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }}
-              label={{ value: 'Days', position: 'insideBottom', offset: -4, style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' } }}
+              tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey)}
+              label={{ value: xAxisOption.label, position: 'insideBottom', offset: -4, style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' } }}
             />
             <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
               formatter={(v: number, name: string) => [fmtAxis(v), name]}
-              labelFormatter={(l) => `Day ${l}`}
+              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey)}`}
               contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
             <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
-            <Area type="monotone" dataKey="m1CumTotal" stroke="hsl(160, 60%, 45%)" fill="url(#cumGradM1)" strokeWidth={2.5} name={`${model1Name} Total`} dot={false} />
+            <Area type="monotone" dataKey="m1Total" stroke="hsl(160, 60%, 45%)" fill="url(#cumGradM1)" strokeWidth={2.5} name={`${model1Name} Total`} dot={false} />
             {showBoth && (
-              <Area type="monotone" dataKey="m2CumTotal" stroke="hsl(280, 65%, 55%)" fill="url(#cumGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Total`} dot={false} />
+              <Area type="monotone" dataKey="m2Total" stroke="hsl(280, 65%, 55%)" fill="url(#cumGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Total`} dot={false} />
             )}
-            {showBoth && crossover?.crossoverDay !== null && crossover?.crossoverDay !== undefined && crossover.crossoverDay >= 0 && crossover.crossoverDay <= maxDays && (
+            {showBoth && crossoverValue !== null && crossoverValue >= xRange.min && crossoverValue <= xRange.max && (
               <ReferenceLine
-                x={crossover.crossoverDay}
+                x={crossoverValue}
                 stroke="hsl(var(--foreground))"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Break-even: Day ${crossover.crossoverDay}`,
+                  value: `Break-even: ${formatXAxisValue(crossoverValue, xAxisKey)}`,
                   position: 'insideTop',
                   offset: 8,
                   style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
@@ -290,7 +442,7 @@ export function CrossoverChart({
           Cost breakdown — setup vs. inference
         </p>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={mergedPoints} margin={{ top: 4, right: 10, left: 10, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 10, left: 10, bottom: 0 }}>
             <defs>
               <linearGradient id="setupGradM1" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="hsl(0, 72%, 60%)" stopOpacity={0.3} />
@@ -310,11 +462,11 @@ export function CrossoverChart({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="day" type="number" domain={[0, maxDays]} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
+            <XAxis dataKey="x" type="number" domain={[xRange.min, xRange.max]} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey)} />
             <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
               formatter={(v: number, name: string) => [fmtAxis(v), tooltipLabels[name] || name]}
-              labelFormatter={(l) => `Day ${l}`}
+              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey)}`}
               contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
             <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
@@ -363,7 +515,7 @@ export function CrossoverChart({
             </div>
           </>
         )}
-        {showBoth && crossover?.crossoverDay !== null && (
+        {showBoth && crossoverValue !== null && (
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-0.5 border-t-2 border-dashed" style={{ borderColor: 'hsl(var(--foreground))' }} />
             <span className="text-muted-foreground">Break-even point</span>
