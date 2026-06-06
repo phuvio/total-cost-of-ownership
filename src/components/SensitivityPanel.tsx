@@ -100,38 +100,42 @@ export function SensitivityPanel({
   model2Ever,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<Chart<"line", number[], number> | null>(null);
+  const chartRef = useRef<Chart<"line", { x: number; y: number }[], number> | null>(null);
 
-  const [xKey, setXKey] = useState<XAxisKey>("requestsPerDay");
+  const initialXAxis = X_AXIS_OPTIONS.find((o) => o.value === "avgTokensPerRequest")!;
+  const [xKey, setXKeyRaw] = useState<XAxisKey>("requestsPerDay");
   const [yKey, setYKey] = useState<YAxisKey>("tco");
-  const [xRange, setXRange] = useState<[number, number]>([100, 8000]);
+  const [xMin, setXMin] = useState<number>(initialXAxis.min);
+  const [xMax, setXMax] = useState<number>(initialXAxis.max);
 
-  // Sync xRange defaults when xKey changes
-  useEffect(() => {
-    const opt = X_AXIS_OPTIONS.find((o) => o.value === xKey)!;
-    setXRange([opt.min, opt.max]);
-  }, [xKey]);
+  const setXKey = (key: XAxisKey) => {
+    const opt = X_AXIS_OPTIONS.find((o) => o.value === key)!;
+    setXKeyRaw(key);
+    setXMin(opt.min);
+    setXMax(opt.max);
+  };
 
   // Build and render chart whenever inputs change
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const pts1 = buildPoints(params1, xKey, yKey, xRange[0], xRange[1]);
-    const pts2 = model2Ever
-      ? buildPoints(params2, xKey, yKey, xRange[0], xRange[1])
-      : [];
-
     const xOpt = X_AXIS_OPTIONS.find((o) => o.value === xKey)!;
     const yOpt = Y_AXIS_OPTIONS.find((o) => o.value === yKey)!;
+
+    const rangeMin = Math.min(xMin, xMax - xOpt.step);
+    const rangeMax = Math.max(xMax, xMin + xOpt.step);
+
+    const pts1 = buildPoints(params1, xKey, yKey, rangeMin, rangeMax);
+    const pts2 = model2Ever
+      ? buildPoints(params2, xKey, yKey, rangeMin, rangeMax)
+      : [];
     const crossover = model2Ever ? findCrossover(pts1, pts2) : null;
 
-    const labels = pts1.map((p) => p.x);
-
-    const datasets: ChartDataset<"line", number[]>[] = [
+    const datasets: ChartDataset<"line", { x: number; y: number }[]>[] = [
       {
         label: model1Name,
-        data: pts1.map((p) => p.y),
+        data: pts1.map((p) => ({ x: p.x, y: p.y })),
         borderColor: "hsl(160, 60%, 45%)",
         backgroundColor: "rgba(29,158,117,0.07)",
         borderWidth: 2.5,
@@ -144,7 +148,7 @@ export function SensitivityPanel({
     if (model2Ever) {
       datasets.push({
         label: model2Name,
-        data: pts2.map((p) => p.y),
+        data: pts2.map((p) => ({ x: p.x, y: p.y })),
         borderColor: "hsl(280, 65%, 55%)",
         backgroundColor: "rgba(83,74,183,0.07)",
         borderWidth: 2.5,
@@ -182,9 +186,8 @@ export function SensitivityPanel({
       };
     }
 
-    // Also mark the current param value on x-axis
     const currentVal1 = params1[xKey];
-    if (currentVal1 >= xRange[0] && currentVal1 <= xRange[1]) {
+    if (currentVal1 >= rangeMin && currentVal1 <= rangeMax) {
       annotations.currentVal1 = {
         type: "line",
         xMin: currentVal1,
@@ -204,9 +207,32 @@ export function SensitivityPanel({
       };
     }
 
+    if (model2Ever) {
+      const currentVal2 = params2[xKey];
+      if (currentVal2 >= rangeMin && currentVal2 <= rangeMax) {
+        annotations.currentVal2 = {
+          type: "line",
+          xMin: currentVal2,
+          xMax: currentVal2,
+          borderColor: "hsl(280, 65%, 55%)",
+          borderWidth: 1,
+          borderDash: [3, 3],
+          label: {
+            display: true,
+            content: `${model2Name}: ${currentVal2} ${xOpt.unit}`,
+            position: "start",
+            backgroundColor: "rgba(83,74,183,0.8)",
+            color: "#fff",
+            font: { size: 10 },
+            padding: 3,
+          },
+        };
+      }
+    }
+
     chartRef.current = new Chart(canvas, {
       type: "line",
-      data: { labels, datasets },
+      data: { datasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -219,7 +245,7 @@ export function SensitivityPanel({
             intersect: false,
             callbacks: {
               title: (items: TooltipItem<"line">[]) =>
-                `${xOpt.label}: ${items[0]?.label} ${xOpt.unit}`,
+                `${xOpt.label}: ${items[0]?.parsed.x?.toFixed(0)} ${xOpt.unit}`,
               label: (item: TooltipItem<"line">) =>
                 `${item.dataset.label}: ${fmtY(item.parsed.y, yKey)}`,
             },
@@ -228,6 +254,8 @@ export function SensitivityPanel({
         scales: {
           x: {
             type: "linear",
+            min: rangeMin,
+            max: rangeMax,
             title: {
               display: true,
               text: `${xOpt.label} (${xOpt.unit})`,
@@ -258,7 +286,7 @@ export function SensitivityPanel({
         chartRef.current = null;
       }
     };
-  }, [params1, params2, xKey, yKey, xRange, model2Ever, model1Name, model2Name]);
+  }, [params1, params2, xKey, yKey, xMin, xMax, model2Ever, model1Name, model2Name]);
 
   const xOpt = X_AXIS_OPTIONS.find((o) => o.value === xKey)!;
 
@@ -322,15 +350,19 @@ export function SensitivityPanel({
             X range — {xOpt.label}
           </Label>
           <span className="text-xs text-muted-foreground sensitivity-range-label">
-            {xRange[0]} – {xRange[1]} {xOpt.unit}
+            {xMin} – {xMax} {xOpt.unit}
           </span>
         </div>
         <Slider
           min={xOpt.min}
           max={xOpt.max}
           step={xOpt.step}
-          value={xRange}
-          onValueChange={(v) => setXRange(v as [number, number])}
+          value={[xMin, xMax]}
+          onValueChange={(v) => {
+            const [min, max] = v as [number, number];
+            setXMin(min);
+            setXMax(max);
+          }}
           className="w-full"
         />
       </div>

@@ -54,6 +54,8 @@ const PIE_LABELS: Record<string, string> = {
   trainingAndSetup: 'Training & Setup',
 };
 
+const CHART_FONT_SIZE = 'var(--chart-font-size)';
+
 function breakdownToData(breakdown: Record<string, number>) {
   return Object.entries(breakdown)
     .filter(([, v]) => v > 0)
@@ -105,7 +107,7 @@ function CostPieChart({
                 return [`${pct}%`, undefined];
               }}
               contentStyle={{
-                fontSize: 11,
+                fontSize: CHART_FONT_SIZE,
                 fontFamily: 'var(--font-display)',
                 borderRadius: 8,
               }}
@@ -119,7 +121,7 @@ function CostPieChart({
           return (
             <div
               key={entry.key}
-              className="flex items-center gap-1 text-[10px]"
+              className="flex items-center gap-1 text-[0.75rem]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
               <div
@@ -250,16 +252,16 @@ export function CrossoverChart({
               dataKey="day"
               type="number"
               domain={[0, maxDays]}
-              tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }}
-              label={{ value: 'Days', position: 'insideBottom', offset: -4, style: { fontSize: 11, fontFamily: 'var(--font-display)' } }}
+              tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }}
+              label={{ value: 'Days', position: 'insideBottom', offset: -4, style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' } }}
             />
-            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} width={48} />
+            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
               formatter={(v: number, name: string) => [fmtAxis(v), name]}
               labelFormatter={(l) => `Day ${l}`}
-              contentStyle={{ fontSize: 11, fontFamily: 'var(--font-display)', borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
             <Area type="monotone" dataKey="m1CumTotal" stroke="hsl(160, 60%, 45%)" fill="url(#cumGradM1)" strokeWidth={2.5} name={`${model1Name} Total`} dot={false} />
             {showBoth && (
               <Area type="monotone" dataKey="m2CumTotal" stroke="hsl(280, 65%, 55%)" fill="url(#cumGradM2)" strokeWidth={2.5} strokeDasharray="8 4" name={`${model2Name} Total`} dot={false} />
@@ -274,7 +276,7 @@ export function CrossoverChart({
                   value: `Break-even: Day ${crossover.crossoverDay}`,
                   position: 'insideTop',
                   offset: 8,
-                  style: { fontSize: 11, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
+                  style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
                 }}
               />
             )}
@@ -308,14 +310,14 @@ export function CrossoverChart({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="day" type="number" domain={[0, maxDays]} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
-            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11, fontFamily: 'var(--font-display)' }} width={48} />
+            <XAxis dataKey="day" type="number" domain={[0, maxDays]} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
+            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
               formatter={(v: number, name: string) => [fmtAxis(v), tooltipLabels[name] || name]}
               labelFormatter={(l) => `Day ${l}`}
-              contentStyle={{ fontSize: 11, fontFamily: 'var(--font-display)', borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'var(--font-display)' }} />
+            <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
             {activeModel === 1 ? (
               <>
                 {showBoth && (

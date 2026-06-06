@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { CalculatorPage } from "./Calculator";
@@ -13,7 +13,12 @@ const Index = () => {
   const [model2Ever, setModel2Ever] = useState(true);
   const [model1Name, setModel1Name] = useState("Model 1");
   const [model2Name, setModel2Name] = useState("Model 2");
+  const [largeFont, setLargeFont] = useState(false);
   const [activeTab, setActiveTab] = useState<"calculator" | "sensitivity" | "scenarios">("calculator");
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("large-font", largeFont);
+  }, [largeFont]);
 
   const handleModelChange = (m: 1 | 2) => {
     if (m === 2) setModel2Ever(true);
@@ -37,6 +42,14 @@ const Index = () => {
         <h1 className="text-base font-bold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
           LLM Total Cost of Ownership Estimator
         </h1>
+        <button
+          type="button"
+          onClick={() => setLargeFont((prev) => !prev)}
+          className="ml-auto rounded-full border px-3 py-1 text-xs font-semibold transition hover:bg-muted/80"
+          aria-pressed={largeFont}
+        >
+          {largeFont ? "Large text on" : "Large text off"}
+        </button>
       </header>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "sensitivity" | "scenarios") }>
