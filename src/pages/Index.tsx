@@ -25,6 +25,22 @@ const Index = () => {
     setActiveModel(m);
   };
 
+  const handleLoadScenario = (
+    model1Name: string,
+    model1Params: TCOParams,
+    model2Name: string,
+    model2Params: TCOParams
+  ) => {
+    setParams1(model1Params);
+    setParams2(model2Params);
+    setModel1Name(model1Name);
+    setModel2Name(model2Name);
+    setActiveModel(1);
+    setModel2Ever(true);
+    setDays(model1Params.days);
+    setActiveTab("calculator");
+  };
+
   const handleReset = () => {
     setParams1({ ...defaultParams });
     setParams2({ ...defaultParams });
@@ -92,7 +108,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="scenarios">
-            <ScenariosPage />
+            <ScenariosPage onLoadScenario={handleLoadScenario} />
           </TabsContent>
         </div>
       </Tabs>
