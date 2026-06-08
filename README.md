@@ -4,6 +4,9 @@ A framework and interactive calculator for estimating the Total Cost of Ownershi
 
 This project is developed as part of a master's thesis at University of Helsinki focusing on cost-aware selection and deployment of Large Language Models in production environments.
 
+The interactive Total Cost of Ownership Estimator can be accessed here:
+[https://phuvio.github.io/total-cost-of-ownership/](https://phuvio.github.io/total-cost-of-ownership/).
+
 ## Purpose
 
 Deploying LLM-based applications involves significantly more than API token pricing. Real-world costs may include:
