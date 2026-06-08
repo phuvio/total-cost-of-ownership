@@ -205,8 +205,8 @@ export function InputPanel({
                 </SelectContent>
               </Select>
             </div>
-            {numField("Input token price (€/tok)", "inputTokenPrice", "0.000001")}
-            {numField("Output token price (€/tok)", "outputTokenPrice", "0.000001")}
+            {numField("Input token price (€/1M tok)", "inputTokenPrice", "0.1")}
+            {numField("Output token price (€/1M tok)", "outputTokenPrice", "0.1")}
             {numField("Context length (tokens)", "contextLength", "1")}
             {numField("Response length (tokens)", "responseLength", "1")}
           </div>

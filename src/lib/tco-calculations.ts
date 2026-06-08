@@ -4,8 +4,8 @@ export interface TCOParams {
 
   // Model config
   modelType: 'api' | 'cloud' | 'self-hosted';
-  inputTokenPrice: number;   // $/token
-  outputTokenPrice: number;  // $/token
+  inputTokenPrice: number;   // € per 1M tokens
+  outputTokenPrice: number;  // € per 1M tokens
   contextLength: number;     // max tokens
   responseLength: number;    // max output tokens
 
@@ -23,7 +23,7 @@ export interface TCOParams {
   toolCalls: boolean;
   embeddingCostPerReq: number;
   rerankerCostPerReq: number;
-  toolCallsPerRequest: number; // NEW: avg number of tool calls per request
+  toolCallsPerRequest: number; // avg number of tool calls per request
 
   // Optimization flags
   caching: boolean;
@@ -37,7 +37,7 @@ export interface TCOParams {
   // Optimization parameters — all require source justification (see comments)
   cacheHitRate: number;        // 0–100 %
   routingSmallModelShare: number;  // 0–100 %, share routed to cheap model
-  routingCostRatio: number;    // NEW: cheap model cost / expensive model cost (replaces hardcoded 0.3)
+  routingCostRatio: number;    // cheap model cost / expensive model cost (replaces hardcoded 0.3)
   tokenReduction: number;      // 0–100 %, prompt compression savings
   fineTuningTokenReduction: number; // 0–100 %, token savings from fine-tuned shorter prompts
 
@@ -97,9 +97,10 @@ export const defaultParams: TCOParams = {
   days: 365,
   modelType: 'api',
 
-  // OpenAI GPT-4o pricing as of 2024 (update from provider pricing pages)
-  inputTokenPrice: 0.000005,
-  outputTokenPrice: 0.000015,
+  // OpenAI GPT-5.4 pricing as of 2026 converted to euros (update from provider pricing pages)
+  // Prices in € per 1M tokens
+  inputTokenPrice: 2.175,
+  outputTokenPrice: 13.05,
   contextLength: 4096,
   responseLength: 512,
 
@@ -216,8 +217,9 @@ export function calculateTCO(p: TCOParams) {
   // STEP 3: Token cost (API pricing)
   // Source: provider pricing pages (OpenAI, Anthropic, Google)
   // FrugalGPT (Chen et al. 2023): C = P_in × T_in + P_out × T_out
+  // Prices are in € per 1M tokens, so divide by 1,000,000 for per-token calculation
   // ─────────────────────────────────────────────────────────────────────────
-  const tokenCost = finalInputTokens * p.inputTokenPrice + finalOutputTokens * p.outputTokenPrice;
+  const tokenCost = (finalInputTokens * p.inputTokenPrice + finalOutputTokens * p.outputTokenPrice) / 1_000_000;
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 4: Architecture component costs per request
@@ -238,8 +240,9 @@ export function calculateTCO(p: TCOParams) {
   // Tool calls: each tool call is an additional LLM round-trip
   // Cost = toolCallsPerRequest × (input tokens for tool schema + output tokens for call)
   // Approximation: each tool call ≈ 300 input tokens + 100 output tokens overhead
+  // Prices are in € per 1M tokens, so divide by 1,000,000 for per-token calculation
   const cTools = p.toolCalls
-    ? p.toolCallsPerRequest * (300 * p.inputTokenPrice + 100 * p.outputTokenPrice)
+    ? (p.toolCallsPerRequest * (300 * p.inputTokenPrice + 100 * p.outputTokenPrice)) / 1_000_000
     : 0;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -311,8 +314,8 @@ export function calculateTCO(p: TCOParams) {
   // STEP 8: Reference cost (no optimizations, for savings calculation)
   // ─────────────────────────────────────────────────────────────────────────
   const referenceCostPerRequest =
-    effectiveInputTokens * p.inputTokenPrice +
-    effectiveOutputTokens * p.outputTokenPrice +
+    (effectiveInputTokens * p.inputTokenPrice +
+    effectiveOutputTokens * p.outputTokenPrice) / 1_000_000 +
     cEmbedding + cReranking + cGuardrails + cTools + computeCostSelfHosted;
 
   // ─────────────────────────────────────────────────────────────────────────
