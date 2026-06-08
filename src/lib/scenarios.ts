@@ -114,7 +114,7 @@ export const scenarios: Scenario[] = [
       apiBatchDiscount: 50,
       selfHostedBatchUtilizationGain: 40,
       tokensPerSecond: 250,
-      gpuPrice: 0.76,
+      gpuPrice: 0.93,
       trainingGpuHours: 0,
       finetuningCost: 0,
       dataPreparationCost: 0,
