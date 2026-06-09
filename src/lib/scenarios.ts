@@ -268,7 +268,7 @@ Experiment with request volume, token consumption, and engineering effort to exp
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching** for a chatbot application. 
     
-The scenario illustrates the impact of using a caching strategy on total cost of ownership. Caching can reduce inference costs by serving repeated requests from cache, but it introduces additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using a caching strategy on total cost of ownership.
 `,
   },
     {
@@ -397,7 +397,7 @@ The scenario illustrates the impact of using a caching strategy on total cost of
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + routing** for a chatbot application. 
     
-The scenario illustrates the impact of using a model routing strategy on total cost of ownership. Model Routing can reduce inference costs by directing requests to the most appropriate model, but it introduces additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using a model routing strategy on total cost of ownership.
 `,
   },
 {
@@ -526,7 +526,7 @@ The scenario illustrates the impact of using a model routing strategy on total c
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + prompt compression** for a chatbot application. 
     
-The scenario illustrates the impact of using a prompt compression strategy on total cost of ownership. Prompt Compression can reduce inference costs by minimizing the input token count, but it introduces additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using a prompt compression strategy on total cost of ownership.
 `,
   },
 {
@@ -655,7 +655,7 @@ The scenario illustrates the impact of using a prompt compression strategy on to
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching and routing** for a chatbot application. 
     
-The scenario illustrates the impact of using caching and routing strategies on total cost of ownership. Caching and Routing can reduce inference costs by minimizing the input token count, but they introduce additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using caching and routing strategies on total cost of ownership.
 `,
   },
 {
@@ -784,7 +784,7 @@ The scenario illustrates the impact of using caching and routing strategies on t
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching, routing, and compression** for a chatbot application. 
     
-The scenario illustrates the impact of using caching, routing, and compression strategies on total cost of ownership. Caching, Routing, and Compression can reduce inference costs by minimizing the input token count, but they introduce additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using caching, routing, and compression strategies on total cost of ownership.
 `,
   },
 {
@@ -913,7 +913,7 @@ The scenario illustrates the impact of using caching, routing, and compression s
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching, routing, prompting, and batching** for a chatbot application. 
     
-The scenario illustrates the impact of using caching, routing, prompting, and batching strategies on total cost of ownership. These features can reduce inference costs by minimizing the input token count, but they introduce additional engineering effort and infrastructure costs.
+The scenario illustrates the impact of using caching, routing, prompting, and batching strategies on total cost of ownership.
 `,
   },
 ];
