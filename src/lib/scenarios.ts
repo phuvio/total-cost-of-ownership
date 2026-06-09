@@ -266,9 +266,7 @@ Experiment with request volume, token consumption, and engineering effort to exp
       guardrailsImplHours: 30,
       toolCallsImplHours: 80,
     },
-    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching** for a chatbot application. 
-    
-The scenario illustrates the impact of using a caching strategy on total cost of ownership.
+    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching** for a chatbot application.
 `,
   },
     {
@@ -395,9 +393,7 @@ The scenario illustrates the impact of using a caching strategy on total cost of
       guardrailsImplHours: 30,
       toolCallsImplHours: 80,
     },
-    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + routing** for a chatbot application. 
-    
-The scenario illustrates the impact of using a model routing strategy on total cost of ownership.
+    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + routing** for a chatbot application.
 `,
   },
 {
@@ -524,9 +520,7 @@ The scenario illustrates the impact of using a model routing strategy on total c
       guardrailsImplHours: 30,
       toolCallsImplHours: 80,
     },
-    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + prompt compression** for a chatbot application. 
-    
-The scenario illustrates the impact of using a prompt compression strategy on total cost of ownership.
+    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + prompt compression** for a chatbot application.
 `,
   },
 {
@@ -653,9 +647,7 @@ The scenario illustrates the impact of using a prompt compression strategy on to
       guardrailsImplHours: 30,
       toolCallsImplHours: 80,
     },
-    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching and routing** for a chatbot application. 
-    
-The scenario illustrates the impact of using caching and routing strategies on total cost of ownership.
+    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching and routing** for a chatbot application.
 `,
   },
 {
@@ -782,9 +774,7 @@ The scenario illustrates the impact of using caching and routing strategies on t
       guardrailsImplHours: 30,
       toolCallsImplHours: 80,
     },
-    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching, routing, and compression** for a chatbot application. 
-    
-The scenario illustrates the impact of using caching, routing, and compression strategies on total cost of ownership.
+    presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching, routing, and compression** for a chatbot application.
 `,
   },
 {
@@ -912,8 +902,6 @@ The scenario illustrates the impact of using caching, routing, and compression s
       toolCallsImplHours: 80,
     },
     presentationText: `Compare **GPT-5.4 API** vs **GPT-5.4 API + caching, routing, prompting, and batching** for a chatbot application. 
-    
-The scenario illustrates the impact of using caching, routing, prompting, and batching strategies on total cost of ownership.
 `,
   },
 ];
