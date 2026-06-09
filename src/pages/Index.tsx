@@ -14,7 +14,7 @@ const Index = () => {
   const [model1Name, setModel1Name] = useState("Model 1");
   const [model2Name, setModel2Name] = useState("Model 2");
   const [largeFont, setLargeFont] = useState(false);
-  const [activeTab, setActiveTab] = useState<"calculator" | "sensitivity" | "scenarios">("calculator");
+  const [activeTab, setActiveTab] = useState<"calculator" | "scenarios">("calculator");
 
   useEffect(() => {
     document.documentElement.classList.toggle("large-font", largeFont);
@@ -68,11 +68,10 @@ const Index = () => {
         </button>
       </header>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "sensitivity" | "scenarios") }>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "scenarios") }>
         <div className="border-b bg-card px-6 py-4">
           <TabsList className="gap-2">
             <TabsTrigger value="calculator">Calculator</TabsTrigger>
-            <TabsTrigger value="sensitivity">Sensitivity</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           </TabsList>
         </div>
