@@ -39,7 +39,7 @@ export interface TCOParams {
   routingSmallModelShare: number;  // 0–100 %, share routed to cheap model
   routingCostRatio: number;    // cheap model cost / expensive model cost (replaces hardcoded 0.3)
   tokenReduction: number;      // 0–100 %, prompt compression savings
-  fineTuningTokenReduction: number; // 0–100 %, token savings from fine-tuned shorter prompts
+  fineTuningTokenReduction: number; // legacy parameter; no longer used in calculations
 
   // Quantization: affects GPU memory and throughput, NOT token prices
   // Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
@@ -64,7 +64,7 @@ export interface TCOParams {
 
   // Fine-tuning costs
   trainingGpuHours: number;
-  finetuningCost: number;
+  finetuningCost?: number; // legacy field; ignored in calculations
   dataPreparationCost: number;
   hardwareCost: number;
 
@@ -164,7 +164,6 @@ export const defaultParams: TCOParams = {
   numberOfGpus: 1,
 
   trainingGpuHours: 0,
-  finetuningCost: 0,
   dataPreparationCost: 0,
   hardwareCost: 0,
 
@@ -202,7 +201,7 @@ export function calculateTCO(p: TCOParams) {
   const effectiveOutputTokens = Math.min(p.avgResponseTokens, p.responseLength);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 2: Token-level reductions (prompt compression, fine-tuning only)
+  // STEP 2: Token-level reductions (prompt compression only)
   //
   // FIX: quantization is REMOVED from token factor.
   // Quantization reduces model size and improves GPU throughput;
@@ -210,10 +209,8 @@ export function calculateTCO(p: TCOParams) {
   // Source: Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
   // ─────────────────────────────────────────────────────────────────────────
   const compressionFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
-  const fineTuningTokenFactor = p.fineTuningReduction ? (1 - p.fineTuningTokenReduction / 100) : 1;
-
-  const finalInputTokens = effectiveInputTokens * compressionFactor * fineTuningTokenFactor;
-  const finalOutputTokens = effectiveOutputTokens * fineTuningTokenFactor; // compression only on input
+  const finalInputTokens = effectiveInputTokens * compressionFactor;
+  const finalOutputTokens = effectiveOutputTokens; // compression only on input
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 3: Token cost (API pricing)
@@ -362,7 +359,6 @@ export function calculateTCO(p: TCOParams) {
   const cTrainingCompute = p.trainingGpuHours * p.gpuPrice * gpuCount;
   const totalSetupCost =
     cTrainingCompute +
-    p.finetuningCost +
     p.dataPreparationCost +
     p.hardwareCost +
     oneTimeEngineeringCost; // only one-time here
@@ -398,7 +394,7 @@ export function calculateTCO(p: TCOParams) {
     compute: computeCost * p.requestsPerDay * p.days,
     engineeringOneTime: oneTimeEngineeringCost,
     engineeringRecurring: recurringEngineeringCost,
-    trainingAndSetup: cTrainingCompute + p.finetuningCost + p.dataPreparationCost + p.hardwareCost,
+    trainingAndSetup: cTrainingCompute + p.dataPreparationCost + p.hardwareCost,
   };
 
   const savingsVsReference = (referenceCostPerRequest - optimizedCostPerRequest) / referenceCostPerRequest;

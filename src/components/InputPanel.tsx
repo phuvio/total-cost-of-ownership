@@ -382,7 +382,8 @@ export function InputPanel({
             )}
             {activeParams.fineTuningReduction && activeParams.modelType !== "api" && (
               <>
-                {numField("Token reduction (%)", "fineTuningTokenReduction", "1")}
+                {numField("Training GPU hours", "trainingGpuHours", "1")}
+                {numField("Data preparation cost (€)", "dataPreparationCost", "1")}
                 {numField("Implementation hours", "fineTuningImplHours", "1")}
               </>
             )}
@@ -408,11 +409,8 @@ export function InputPanel({
             {numField("Engineering hours (one-time)", "engineeringHoursOneTime", "1")}
             {numField("Monthly ops hours", "engineeringHoursMonthlyOps", "1")}
             {numField("Cost per hour (€/hr)", "costPerHour", "1")}
-            {activeParams.modelType !== "api" && numField("Training GPU hours", "trainingGpuHours", "1")}
             {activeParams.modelType !== "api" && numField("GPU price (€/hr)", "gpuPrice", "0.1")}
             {activeParams.modelType !== "api" && numField("Number of GPUs", "numberOfGpus", "1")}
-            {numField("Fine-tuning cost (€)", "finetuningCost", "1")}
-            {numField("Data preparation cost (€)", "dataPreparationCost", "1")}
             {numField("Hardware costs (€)", "hardwareCost", "1")}
             {/* Tokens per second shown only for self-hosted/cloud */}
             {activeParams.modelType !== "api" &&
