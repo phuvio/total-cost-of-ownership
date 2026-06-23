@@ -60,6 +60,7 @@ export interface TCOParams {
   // Default throughput sources: MLCommons MLPerf Inference results
   tokensPerSecond: number;     // GPU throughput, model- and hardware-specific
   gpuPrice: number;            // $/hour
+  numberOfGpus?: number;
 
   // Fine-tuning costs
   trainingGpuHours: number;
@@ -160,6 +161,7 @@ export const defaultParams: TCOParams = {
   tokensPerSecond: 300,
   // Lambda Labs A100 80GB: ~$1.99/hr on-demand; A10G ~$0.76/hr (2024 rates)
   gpuPrice: 1.99,
+  numberOfGpus: 1,
 
   trainingGpuHours: 0,
   finetuningCost: 0,
@@ -262,7 +264,8 @@ export function calculateTCO(p: TCOParams) {
     ? effectiveThroughput * p.specDecodingThroughputGain
     : effectiveThroughput;
 
-  const costPerSecond = p.gpuPrice / 3600;
+  const gpuCount = Math.max(0, p.numberOfGpus ?? 1);
+  const costPerSecond = (p.gpuPrice * gpuCount) / 3600;
   const totalTokens = finalInputTokens + finalOutputTokens;
   const inferenceSeconds = totalTokens / throughputWithSpecDecoding;
 
@@ -356,7 +359,7 @@ export function calculateTCO(p: TCOParams) {
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 10: Training / setup costs (one-time capex)
   // ─────────────────────────────────────────────────────────────────────────
-  const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
+  const cTrainingCompute = p.trainingGpuHours * p.gpuPrice * gpuCount;
   const totalSetupCost =
     cTrainingCompute +
     p.finetuningCost +
