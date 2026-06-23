@@ -411,7 +411,7 @@ export function InputPanel({
             {numField("Cost per hour (€/hr)", "costPerHour", "1")}
             {activeParams.modelType !== "api" && numField("GPU price (€/hr)", "gpuPrice", "0.1")}
             {activeParams.modelType !== "api" && numField("Number of GPUs", "numberOfGpus", "1")}
-            {numField("Hardware costs (€)", "hardwareCost", "1")}
+            {activeParams.modelType === "self-hosted" && numField("Hardware costs (€)", "hardwareCost", "1")}
             {/* Tokens per second shown only for self-hosted/cloud */}
             {activeParams.modelType !== "api" &&
               numField("Tokens per second (GPU throughput)", "tokensPerSecond", "1")}
