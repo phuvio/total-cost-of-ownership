@@ -43,8 +43,10 @@ export function CalculatorPage({
     <div className="grid grid-cols-1 lg:grid-cols-[320px_2fr_3fr] h-[calc(100vh-7.5rem)]">
       <div className="border-r bg-card overflow-y-auto">
         <InputPanel
-          params={activeModel === 1 ? params1 : params2}
-          onChange={activeModel === 1 ? setParams1 : setParams2}
+          params1={params1}
+          params2={params2}
+          onParams1Change={setParams1}
+          onParams2Change={setParams2}
           activeModel={activeModel}
           onModelChange={onModelChange}
           days={days}
