@@ -356,7 +356,6 @@ export function InputPanel({
             {activeParams.quantization && activeParams.modelType !== "api" && (
               <>
                 {numField("Throughput gain (multiplier)", "quantizationThroughputGain", "0.1")}
-                {numField("Quality retention (%)", "quantizationQualityRetention", "1")}
                 {numField("Implementation hours", "quantizationImplHours", "1")}
               </>
             )}
