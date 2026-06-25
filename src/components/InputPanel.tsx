@@ -307,8 +307,6 @@ export function InputPanel({
 
             {toggle("Reranking Model", "rerankingModel")}
             {activeParams.rerankingModel &&
-              numField("Reranker cost / req (€)", "rerankerCostPerReq", "0.000001")}
-            {activeParams.rerankingModel &&
               numField("Implementation hours", "rerankingImplHours", "1")}
 
             {toggle("Moderation Model", "moderationModel")}
