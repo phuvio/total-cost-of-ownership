@@ -304,8 +304,6 @@ export function InputPanel({
             {toggle("Embedding Generation", "embeddingGen")}
             {activeParams.embeddingGen &&
               numField("Implementation hours", "embeddingGenImplHours", "1")}
-            {(activeParams.vectorDb || activeParams.embeddingGen) &&
-              numField("Embedding cost / req (€)", "embeddingCostPerReq", "0.000001")}
 
             {toggle("Reranking Model", "rerankingModel")}
             {activeParams.rerankingModel &&

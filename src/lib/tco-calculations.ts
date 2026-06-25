@@ -21,7 +21,6 @@ export interface TCOParams {
   moderationModel: boolean;
   guardrails: boolean;
   toolCalls: boolean;
-  embeddingCostPerReq: number;
   rerankerCostPerReq: number;
   toolCallsPerRequest: number; // avg number of tool calls per request
 
@@ -115,8 +114,6 @@ export const defaultParams: TCOParams = {
   moderationModel: false,
   guardrails: false,
   toolCalls: false,
-  // OpenAI text-embedding-3-small: $0.00000002/token × ~500 tokens ≈ $0.00001/req
-  embeddingCostPerReq: 0.00001,
   // Cohere Rerank API: ~$0.001/100 searches = $0.00001/req, but cross-encoder self-hosted higher
   rerankerCostPerReq: 0.0002,
   toolCallsPerRequest: 2,
@@ -224,10 +221,6 @@ export function calculateTCO(p: TCOParams) {
   // STEP 4: Architecture component costs per request
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Embedding: cost for RAG retrieval query embedding
-  // Source: OpenAI text-embedding-3-small pricing
-  const cEmbedding = (p.vectorDb || p.embeddingGen) ? p.embeddingCostPerReq : 0;
-
   // Reranking: cross-encoder adds latency and cost
   // Source: Cohere Rerank API; self-hosted BAAI/bge-reranker benchmarks
   const cReranking = p.rerankingModel ? p.rerankerCostPerReq : 0;
@@ -278,7 +271,7 @@ export function calculateTCO(p: TCOParams) {
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 6: Base inference cost per request (before request-level optimizations)
   // ─────────────────────────────────────────────────────────────────────────
-  const baseCostPerRequest = tokenCost + cEmbedding + cReranking + cGuardrails + cTools + computeCost;
+  const baseCostPerRequest = tokenCost + cReranking + cGuardrails + cTools + computeCost;
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 7: Request-level optimizations
@@ -316,7 +309,7 @@ export function calculateTCO(p: TCOParams) {
   const referenceCostPerRequest =
     (effectiveInputTokens * p.inputTokenPrice +
     effectiveOutputTokens * p.outputTokenPrice) / 1_000_000 +
-    cEmbedding + cReranking + cGuardrails + cTools + computeCostSelfHosted;
+    cReranking + cGuardrails + cTools + computeCostSelfHosted;
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 9: Engineering costs — split one-time vs recurring
@@ -387,7 +380,6 @@ export function calculateTCO(p: TCOParams) {
   // ─────────────────────────────────────────────────────────────────────────
   const costBreakdown = {
     tokens: tokenCost * p.requestsPerDay * p.days,
-    retrieval: cEmbedding * p.requestsPerDay * p.days,
     reranking: cReranking * p.requestsPerDay * p.days,
     guardrails: cGuardrails * p.requestsPerDay * p.days,
     tools: cTools * p.requestsPerDay * p.days,
