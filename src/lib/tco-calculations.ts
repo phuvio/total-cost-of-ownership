@@ -252,13 +252,11 @@ export function calculateTCO(p: TCOParams) {
   const totalTokens = finalInputTokens + finalOutputTokens;
   const inferenceSeconds = totalTokens / throughputWithSpecDecoding;
 
-  // Cloud-hosted: managed GPU service, margin added by provider (~2x markup typical)
   const computeCostSelfHosted = inferenceSeconds * costPerSecond;
-  const computeCostCloud = computeCostSelfHosted * 2.0; // provider markup
 
   const computeCost =
     p.modelType === 'self-hosted' ? computeCostSelfHosted :
-    p.modelType === 'cloud' ? computeCostCloud :
+    p.modelType === 'cloud' ? computeCostSelfHosted :
     0; // API: compute bundled into token price
 
   // ─────────────────────────────────────────────────────────────────────────
