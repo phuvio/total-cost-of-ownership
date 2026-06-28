@@ -1,4 +1,4 @@
-import { TCOParams } from "@/lib/tco-calculations";
+import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -117,7 +117,11 @@ export function InputPanel({
   // engineeringHoursOneTime is purely the base hours field (e.g. 40h for API, 200h for self-hosted).
 
   const numField = (label: string, key: NumericFieldKey, step?: string) => {
-    const value = (activeParams[key] ?? (key === "numberOfGpus" ? 1 : 0)) as number;
+    const fallbackValues: Partial<Record<NumericFieldKey, number>> = {
+      avgCostPerToolCall: defaultParams.avgCostPerToolCall ?? 0.002,
+      numberOfGpus: 1,
+    };
+    const value = (activeParams[key] ?? fallbackValues[key] ?? 0) as number;
     const valuesMatch = params1[key] === params2[key];
     const isLocked = lockedFields[key] ?? false;
 
@@ -320,6 +324,8 @@ export function InputPanel({
             {toggle("Tool Calls", "toolCalls")}
             {activeParams.toolCalls &&
               numField("Tool calls / request (avg)", "toolCallsPerRequest", "1")}
+            {activeParams.toolCalls &&
+              numField("Avg cost per tool call (€)", "avgCostPerToolCall", "0.0001")}
             {activeParams.toolCalls &&
               numField("Implementation hours", "toolCallsImplHours", "1")}
           </div>

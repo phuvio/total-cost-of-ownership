@@ -31,8 +31,8 @@ const Index = () => {
     model2Name: string,
     model2Params: TCOParams
   ) => {
-    setParams1(model1Params);
-    setParams2(model2Params);
+    setParams1({ ...defaultParams, ...model1Params });
+    setParams2({ ...defaultParams, ...model2Params });
     setModel1Name(model1Name);
     setModel2Name(model2Name);
     setActiveModel(1);

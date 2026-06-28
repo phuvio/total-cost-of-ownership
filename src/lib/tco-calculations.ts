@@ -22,6 +22,7 @@ export interface TCOParams {
   guardrails: boolean;
   toolCalls: boolean;
   toolCallsPerRequest: number; // avg number of tool calls per request
+  avgCostPerToolCall?: number; // € per tool call on average
 
   // Optimization flags
   caching: boolean;
@@ -114,6 +115,7 @@ export const defaultParams: TCOParams = {
   guardrails: false,
   toolCalls: false,
   toolCallsPerRequest: 2,
+  avgCostPerToolCall: 0.002,
 
   // Optimization flags — all default to false (no optimizations applied)
   caching: false,
@@ -223,12 +225,9 @@ export function calculateTCO(p: TCOParams) {
   const cGuardrails = (p.moderationModel ? 0.00002 : 0) + (p.guardrails ? 0.0003 : 0);
 
   // Tool calls: each tool call is an additional LLM round-trip
-  // Cost = toolCallsPerRequest × (input tokens for tool schema + output tokens for call)
-  // Approximation: each tool call ≈ 300 input tokens + 100 output tokens overhead
-  // Prices are in € per 1M tokens, so divide by 1,000,000 for per-token calculation
-  const cTools = p.toolCalls
-    ? (p.toolCallsPerRequest * (300 * p.inputTokenPrice + 100 * p.outputTokenPrice)) / 1_000_000
-    : 0;
+  // Cost = number of tool calls × average cost per tool call
+  const avgCostPerToolCall = p.avgCostPerToolCall ?? defaultParams.avgCostPerToolCall;
+  const cTools = p.toolCalls ? p.toolCallsPerRequest * avgCostPerToolCall : 0;
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 5: Compute cost for self-hosted / cloud-hosted deployments
