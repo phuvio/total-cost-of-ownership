@@ -59,13 +59,17 @@ export interface TCOParams {
   // Default throughput sources: MLCommons MLPerf Inference results
   tokensPerSecond: number;     // GPU throughput, model- and hardware-specific
   gpuPrice: number;            // $/hour
+  // numberOfGpus is a capacity-planning input. It does not multiply per-request
+  // compute cost. It only informs hardwareCost, which the caller should set 
+  // as numberOfGpus × per-unit acquisition price  for self-hosted deployments.
+  // Included here for documentation/UI purposes.
   numberOfGpus?: number;
 
   // Fine-tuning costs
   trainingGpuHours: number;
   finetuningCost?: number; // legacy field; ignored in calculations
   dataPreparationCost: number;
-  hardwareCost: number;
+  hardwareCost: number; // total hardware cost = numberOfGpus × unit price (self-hosted only)
 
   // Engineering costs — split into one-time and recurring
   // One-time: architecture setup, optimization implementation
@@ -99,8 +103,8 @@ export const defaultParams: TCOParams = {
 
   // OpenAI GPT-5.4 pricing as of 2026 converted to euros (update from provider pricing pages)
   // Prices in € per 1M tokens
-  inputTokenPrice: 2.175,
-  outputTokenPrice: 13.05,
+  inputTokenPrice: 2.175, // €/M tokens
+  outputTokenPrice: 13.05, // €/M tokens
   contextLength: 4096,
   responseLength: 512,
 
@@ -201,7 +205,7 @@ export function calculateTCO(p: TCOParams) {
   //
   // FIX: quantization is REMOVED from token factor.
   // Quantization reduces model size and improves GPU throughput;
-  // it does NOT change the number of tokens sent to/from the model.
+  // it does not change the number of tokens sent to/from the model.
   // Source: Dettmers et al. (2022) LLM.int8(); Frantar et al. (2022) GPTQ
   // ─────────────────────────────────────────────────────────────────────────
   const compressionFactor = p.promptCompression ? (1 - p.tokenReduction / 100) : 1;
@@ -247,15 +251,15 @@ export function calculateTCO(p: TCOParams) {
     : effectiveThroughput;
 
   const gpuCount = Math.max(0, p.numberOfGpus ?? 1);
-  const costPerSecond = (p.gpuPrice * gpuCount) / 3600;
+  const costPerSecond = p.gpuPrice / 3600;
   const totalTokens = finalInputTokens + finalOutputTokens;
   const inferenceSeconds = totalTokens / throughputWithSpecDecoding;
 
-  const computeCostSelfHosted = inferenceSeconds * costPerSecond;
+  const computeCostPerRequest = inferenceSeconds * costPerSecond;
 
   const computeCost =
-    p.modelType === 'self-hosted' ? computeCostSelfHosted :
-    p.modelType === 'cloud' ? computeCostSelfHosted :
+    p.modelType === 'self-hosted' ? computeCostPerRequest :
+    p.modelType === 'cloud' ? computeCostPerRequest :
     0; // API: compute bundled into token price
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -299,7 +303,7 @@ export function calculateTCO(p: TCOParams) {
   const referenceCostPerRequest =
     (effectiveInputTokens * p.inputTokenPrice +
     effectiveOutputTokens * p.outputTokenPrice) / 1_000_000 +
-    cGuardrails + cTools + computeCostSelfHosted;
+    cGuardrails + cTools + computeCostPerRequest;
 
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 9: Engineering costs — split one-time vs recurring
@@ -339,7 +343,7 @@ export function calculateTCO(p: TCOParams) {
   // ─────────────────────────────────────────────────────────────────────────
   // STEP 10: Training / setup costs (one-time capex)
   // ─────────────────────────────────────────────────────────────────────────
-  const cTrainingCompute = p.trainingGpuHours * p.gpuPrice * gpuCount;
+  const cTrainingCompute = p.trainingGpuHours * p.gpuPrice;
   const totalSetupCost =
     cTrainingCompute +
     p.dataPreparationCost +
