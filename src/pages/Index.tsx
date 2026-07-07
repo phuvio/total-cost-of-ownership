@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { CalculatorPage } from "./Calculator";
-import { SensitivityPage } from "./Sensitivity";
 import { ScenariosPage } from "./Scenarios";
 
 const Index = () => {
@@ -93,16 +92,6 @@ const Index = () => {
               onReset={handleReset}
               setParams1={setParams1}
               setParams2={setParams2}
-            />
-          </TabsContent>
-
-          <TabsContent value="sensitivity">
-            <SensitivityPage
-              params1={{ ...params1, days }}
-              params2={{ ...params2, days }}
-              model1Name={model1Name}
-              model2Name={model2Name}
-              model2Ever={model2Ever}
             />
           </TabsContent>
 
