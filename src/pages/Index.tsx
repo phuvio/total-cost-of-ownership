@@ -3,6 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 import { CalculatorPage } from "./Calculator";
 import { ScenariosPage } from "./Scenarios";
+import { AgentPage } from "./Agent";
+import { AgentSuggestion, AgentTargetSlot } from "@/lib/agentTypes";
 
 const Index = () => {
   const [days, setDays] = useState(defaultParams.days);
@@ -13,7 +15,7 @@ const Index = () => {
   const [model1Name, setModel1Name] = useState("Model 1");
   const [model2Name, setModel2Name] = useState("Model 2");
   const [largeFont, setLargeFont] = useState(false);
-  const [activeTab, setActiveTab] = useState<"calculator" | "scenarios">("calculator");
+  const [activeTab, setActiveTab] = useState<"calculator" | "scenarios" | "agent">("calculator");
 
   useEffect(() => {
     document.documentElement.classList.toggle("large-font", largeFont);
@@ -50,6 +52,40 @@ const Index = () => {
     setModel2Name("Model 2");
   };
 
+  const applyAgentSuggestion = (suggestion: AgentSuggestion, targetSlot: AgentTargetSlot) => {
+    const nextModel1 = { ...defaultParams, ...suggestion.model1Params };
+    const nextModel2 = { ...defaultParams, ...suggestion.model2Params };
+
+    if (targetSlot === "both") {
+      setParams1(nextModel1);
+      setParams2(nextModel2);
+      setModel1Name(suggestion.model1Name);
+      setModel2Name(suggestion.model2Name);
+      setModel2Ever(true);
+      setDays(nextModel1.days);
+      setActiveModel(1);
+      setActiveTab("calculator");
+      return;
+    }
+
+    if (targetSlot === "model1") {
+      setParams1(nextModel1);
+      setModel1Name(suggestion.model1Name);
+      setModel2Ever(false);
+      setDays(nextModel1.days);
+      setActiveModel(1);
+      setActiveTab("calculator");
+      return;
+    }
+
+    setParams2(nextModel2);
+    setModel2Name(suggestion.model2Name);
+    setModel2Ever(false);
+    setDays(nextModel2.days);
+    setActiveModel(2);
+    setActiveTab("calculator");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card px-6 py-3 flex items-center gap-3">
@@ -67,11 +103,12 @@ const Index = () => {
         </button>
       </header>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "scenarios") }>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "scenarios" | "agent") }>
         <div className="border-b bg-card px-6 py-4">
           <TabsList className="gap-2">
             <TabsTrigger value="calculator">Calculator</TabsTrigger>
             <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
+            <TabsTrigger value="agent">AI Agent</TabsTrigger>
           </TabsList>
         </div>
 
@@ -97,6 +134,14 @@ const Index = () => {
 
           <TabsContent value="scenarios">
             <ScenariosPage onLoadScenario={handleLoadScenario} />
+          </TabsContent>
+
+          <TabsContent value="agent">
+            <AgentPage
+              model1Name={model1Name}
+              model2Name={model2Name}
+              onApplySuggestion={applyAgentSuggestion}
+            />
           </TabsContent>
         </div>
       </Tabs>

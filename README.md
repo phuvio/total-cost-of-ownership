@@ -62,6 +62,15 @@ The project explores how architectural and optimization decisions affect the tot
 - Recharts
 - Vite
 
+## Agent Endpoint
+
+The AI setup agent uses the `/api/agent` endpoint in development and production.
+
+- In development, Vite serves the endpoint through local middleware.
+- In production, deploy the app to Vercel or another serverless host that serves `api/agent.ts`.
+- Set `ANTHROPIC_API_KEY` in the serverless environment to enable Claude-backed responses.
+- If the key is absent, the handler falls back to deterministic local suggestions.
+
 ## Status
 
 Prototype / research project under active development.
