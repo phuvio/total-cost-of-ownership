@@ -1084,7 +1084,7 @@ Experiment with request volume, token consumption, and engineering effort to exp
       gpuPrice: 0.1303,
       trainingGpuHours: 0,
       dataPreparationCost: 0,
-      hardwareCost: 22400,
+      hardwareCost: 23975,
       engineeringHoursOneTime: 200,
       costPerHour: 150,
       engineeringHoursMonthlyOps: 40,
