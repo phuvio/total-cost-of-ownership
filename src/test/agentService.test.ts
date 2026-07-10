@@ -63,12 +63,15 @@ describe("agentService", () => {
       const suggestion = await generateAgentSuggestion({
         mode: "compare",
         targetSlot: "both",
-        currentModel1Name: "Model 1",
-        currentModel2Name: "Model 2",
+        currentModel1Name: "GPT-4.1",
+        currentModel2Name: "Llama 3.1 70B",
         answers: [
-          { key: "models", value: "gpt-4o vs llama", label: "models" },
+          { key: "models", value: "mistral vs qwen", label: "models" },
         ],
       });
+
+      expect(suggestion.model1Name).toBe("Cloud candidate");
+      expect(suggestion.model2Name).toBe("API candidate");
 
       expect(suggestion.model1Params.modelType).toBe("cloud");
       expect(suggestion.model1Params.inputTokenPrice).toBe(0);
@@ -79,6 +82,28 @@ describe("agentService", () => {
       expect(suggestion.model2Params.gpuPrice).toBe(0);
       expect(suggestion.model2Params.inputTokenPrice).toBeGreaterThan(0);
       expect(suggestion.model2Params.outputTokenPrice).toBeGreaterThan(0);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("preserves the user-provided model names in compare fallback mode", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("offline"))) as typeof fetch;
+
+    try {
+      const suggestion = await generateAgentSuggestion({
+        mode: "compare",
+        targetSlot: "both",
+        currentModel1Name: "Model 1",
+        currentModel2Name: "Model 2",
+        answers: [
+          { key: "models", value: "mistral vs qwen", label: "models" },
+        ],
+      });
+
+      expect(suggestion.model1Name).toBe("mistral");
+      expect(suggestion.model2Name).toBe("qwen");
     } finally {
       globalThis.fetch = originalFetch;
     }

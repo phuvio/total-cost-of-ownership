@@ -7,6 +7,7 @@ import {
   AgentWorkflowMode,
   agentSystemPrompt,
 } from "@/lib/agentTypes";
+import { resolveAgentModelNames } from "./agentNaming";
 
 const AGENT_ENDPOINT = "/api/agent";
 
@@ -55,16 +56,25 @@ function deriveModelNames(request: AgentGenerationRequest, answers: Record<strin
     const comparison = answers.models || "";
     const parts = comparison.split(/\s+vs\s+|\s+against\s+|\s+and\s+/i).map((part) => part.trim()).filter(Boolean);
     return {
-      model1Name: parts[0] || request.currentModel1Name || "Recommended API",
-      model2Name: parts[1] || request.currentModel2Name || "Alternative baseline",
+      model1Name: parts[0] || request.currentModel1Name,
+      model2Name: parts[1] || request.currentModel2Name,
     };
   }
 
-  const applicationName = answers.application?.trim();
   return {
-    model1Name: applicationName || request.currentModel1Name || "Recommended configuration",
-    model2Name: request.currentModel2Name || "Alternative baseline",
+    model1Name: request.currentModel1Name,
+    model2Name: request.currentModel2Name,
   };
+}
+
+function resolveSuggestionNames(
+  request: AgentGenerationRequest,
+  answers: Record<string, string>,
+  model1Type: TCOParams["modelType"],
+  model2Type: TCOParams["modelType"],
+) {
+  const baseNames = deriveModelNames(request, answers);
+  return resolveAgentModelNames(baseNames.model1Name, baseNames.model2Name, model1Type, model2Type);
 }
 
 function inferRequestsPerDay(mode: AgentWorkflowMode, answers: Record<string, string>): number {
@@ -101,7 +111,6 @@ function buildCompareSuggestion(request: AgentGenerationRequest, answers: Record
   const tokenCounts = inferTokenCounts(request.mode, answers);
   const latencyCritical = answers.latencyCritical === "yes";
   const existingGpuInfra = answers.existingGpuInfra === "yes";
-  const names = deriveModelNames(request, answers);
 
   const model1Params = normalizeParams({
     modelType: "api",
@@ -140,6 +149,8 @@ function buildCompareSuggestion(request: AgentGenerationRequest, answers: Record
     gpuPrice: existingGpuInfra ? 0.87 : 1.19,
   });
 
+  const names = resolveSuggestionNames(request, answers, model1Params.modelType, model2Params.modelType);
+
   return {
     model1Name: names.model1Name,
     model1Params,
@@ -161,7 +172,6 @@ function buildConfigureSuggestion(request: AgentGenerationRequest, answers: Reco
   const requestsPerDay = inferRequestsPerDay(request.mode, answers);
   const tokenCounts = inferTokenCounts(request.mode, answers);
   const needsRetrieval = isYes(answers.retrieval) || isYes(answers.toolUse);
-  const names = deriveModelNames(request, answers);
 
   const primaryParams = normalizeParams({
     modelType: "api",
@@ -194,6 +204,8 @@ function buildConfigureSuggestion(request: AgentGenerationRequest, answers: Reco
     modelRouting: true,
   });
 
+  const names = resolveSuggestionNames(request, answers, primaryParams.modelType, secondaryParams.modelType);
+
   return {
     model1Name: names.model1Name,
     model1Params: primaryParams,
@@ -218,12 +230,20 @@ function buildFallbackSuggestion(request: AgentGenerationRequest): AgentSuggesti
 
 function parseResponse(payload: unknown): AgentSuggestion {
   const candidate = payload as Partial<AgentGenerationResponse> | null | undefined;
+  const model1Params = normalizeParams(candidate?.model1Params);
+  const model2Params = normalizeParams(candidate?.model2Params);
+  const names = resolveAgentModelNames(
+    candidate?.model1Name || "Model 1",
+    candidate?.model2Name || "Model 2",
+    model1Params.modelType,
+    model2Params.modelType,
+  );
 
   return {
-    model1Name: candidate?.model1Name || "Model 1",
-    model1Params: normalizeParams(candidate?.model1Params),
-    model2Name: candidate?.model2Name || "Model 2",
-    model2Params: normalizeParams(candidate?.model2Params),
+    model1Name: names.model1Name,
+    model1Params,
+    model2Name: names.model2Name,
+    model2Params,
     reasoning: {
       model1: candidate?.reasoning?.model1 || "Suggested by the agent.",
       model2: candidate?.reasoning?.model2 || "Suggested by the agent.",

@@ -4,6 +4,7 @@ import {
   AgentGenerationResponse,
   AgentSuggestion,
 } from "./agentTypes";
+import { resolveAgentModelNames } from "./agentNaming";
 
 const gpuFallbackByModelType: Record<TCOParams["modelType"], number> = {
   api: 0,
@@ -62,16 +63,25 @@ function parseModelNames(request: AgentGenerationRequest, answers: Record<string
     const comparison = answers.models || "";
     const parts = comparison.split(/\s+vs\s+|\s+against\s+|\s+and\s+/i).map((part) => part.trim()).filter(Boolean);
     return {
-      model1Name: parts[0] || request.currentModel1Name || "Recommended API",
-      model2Name: parts[1] || request.currentModel2Name || "Alternative baseline",
+      model1Name: parts[0] || request.currentModel1Name,
+      model2Name: parts[1] || request.currentModel2Name,
     };
   }
 
-  const applicationName = answers.application?.trim();
   return {
-    model1Name: applicationName || request.currentModel1Name || "Recommended configuration",
-    model2Name: request.currentModel2Name || "Alternative baseline",
+    model1Name: request.currentModel1Name,
+    model2Name: request.currentModel2Name,
   };
+}
+
+function resolveSuggestionNames(
+  request: AgentGenerationRequest,
+  answers: Record<string, string>,
+  model1Type: TCOParams["modelType"],
+  model2Type: TCOParams["modelType"],
+) {
+  const baseNames = parseModelNames(request, answers);
+  return resolveAgentModelNames(baseNames.model1Name, baseNames.model2Name, model1Type, model2Type);
 }
 
 function inferRequestsPerDay(mode: AgentGenerationRequest["mode"], answers: Record<string, string>): number {
@@ -193,7 +203,7 @@ async function collectEvidence(request: AgentGenerationRequest, answers: Record<
 
 function buildLocalSuggestion(request: AgentGenerationRequest, context: AgentRuntimeContext): AgentSuggestion {
   const { answers } = context;
-  const names = parseModelNames(request, answers);
+  const baseNames = parseModelNames(request, answers);
   const requestsPerDay = inferRequestsPerDay(request.mode, answers);
   const tokenCounts = inferTokenCounts(request.mode, answers);
   const latencyCritical = answers.latencyCritical === "yes";
@@ -238,6 +248,8 @@ function buildLocalSuggestion(request: AgentGenerationRequest, context: AgentRun
     tokensPerSecond: existingGpuInfra ? 240 : 180,
     gpuPrice: existingGpuInfra ? 0.87 : 1.19,
   });
+
+  const names = resolveSuggestionNames(request, answers, model1Params.modelType, model2Params.modelType);
 
   return {
     model1Name: names.model1Name,
@@ -312,11 +324,13 @@ async function callAnthropic(request: AgentGenerationRequest, context: AgentRunt
 
   try {
     const parsed = JSON.parse(text) as Partial<AgentGenerationResponse>;
+    const model1Params = normalizeParams(parsed.model1Params);
+    const model2Params = normalizeParams(parsed.model2Params);
     return {
       model1Name: parsed.model1Name || context.evidence[0]?.title || "Model 1",
-      model1Params: normalizeParams(parsed.model1Params),
+      model1Params,
       model2Name: parsed.model2Name || context.evidence[1]?.title || "Model 2",
-      model2Params: normalizeParams(parsed.model2Params),
+      model2Params,
       reasoning: {
         model1: parsed.reasoning?.model1 || "Suggested by Claude.",
         model2: parsed.reasoning?.model2 || "Suggested by Claude.",
