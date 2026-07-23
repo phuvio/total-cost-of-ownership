@@ -86,6 +86,18 @@ pricing data and benchmarks.
 - costPerHour (organisation-specific)
 - hardwareCost (organisation-specific)
 
+## Model naming rules:
+- model1Name and model2Name MUST reflect the exact model found during web search
+- Do NOT use the user's input as the model name
+- Use the official full model name as published by the provider
+- Examples: 
+  - "mistral" → "Mistral Small 3.1 24B" (or whatever current model you find)
+  - "qwen" → "Qwen3 4B" (or whatever current model you find)
+  - "gpt-4o" → "GPT-4o (2024-11-20)"
+- If multiple versions exist, pick the most cost-efficient one for the use case
+  and explain your choice in the reasoning field
+- Format: "Provider ModelName Version" e.g. "Meta Llama 3.1 8B Instruct"
+
 ## Output format:
 Return ONLY a valid JSON object with this structure:
 {

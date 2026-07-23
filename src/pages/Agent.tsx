@@ -27,6 +27,10 @@ export function AgentPage({ model1Name, model2Name, onApplySuggestion }: AgentPa
             will then suggest parameters for {model1Name} and {model2Name} or build a single-use preset for your
             current setup.
           </p>
+
+          <p className="text-sm text-muted-foreground mt-2">
+            AI can make mistakes. Check the values obtained.
+          </p>
         </Card>
 
         <AgentPanel
