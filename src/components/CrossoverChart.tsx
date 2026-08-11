@@ -321,7 +321,7 @@ export function CrossoverChart({
   };
 
   return (
-    <div className="p-6 space-y-4 h-full flex flex-col">
+    <div className="p-6 space-y-4 h-full min-h-0 flex flex-col overflow-y-auto">
       <div className="flex flex-wrap items-center gap-3">
         <h2
           className="text-sm font-bold uppercase tracking-widest text-primary"
