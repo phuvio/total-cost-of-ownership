@@ -31,6 +31,8 @@ jobs:
         run: npm ci
 
       - name: Build project
+        env:
+          VITE_AGENT_ENDPOINT: https://total-cost-of-ownership-xi.vercel.app/api/agent
         run: npm run build
 
       - name: Upload artifact

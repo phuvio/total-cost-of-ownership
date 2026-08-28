@@ -42,8 +42,32 @@ function isAgentRequest(payload: unknown): payload is AgentGenerationRequest {
   );
 }
 
-export default async function handler(req: AgentRequest, res: ServerResponse<IncomingMessage>) {
-  console.log("[agent] OpenAI API key configured:", Boolean(process.env.OPENAI_API_KEY));
+export default async function handler(
+  req: AgentRequest,
+  res: ServerResponse<IncomingMessage>
+) {
+  const allowedOrigin =
+    "https://phuvio.github.io";
+
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+  res.setHeader("Vary", "Origin");
+
+  if (req.method === "OPTIONS") {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
+
+  console.log("[agent] env check:", {
+    hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
+    keyLength: process.env.OPENAI_API_KEY?.length ?? 0,
+    nodeEnv: process.env.NODE_ENV,
+  });
 
   if (req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed" });

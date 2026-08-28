@@ -9,7 +9,7 @@ import {
 } from "@/lib/agentTypes.js";
 import { resolveAgentModelNames } from "./agentNaming.js";
 
-const AGENT_ENDPOINT = "/api/agent";
+const AGENT_ENDPOINT = import.meta.env.VITE_AGENT_ENDPOINT || "/api/agent";
 
 const gpuFallbackByModelType: Record<TCOParams["modelType"], number> = {
   api: 0,
