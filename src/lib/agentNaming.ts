@@ -1,4 +1,4 @@
-import type { TCOParams } from "./tco-calculations";
+import type { TCOParams } from "./tco-calculations.js";
 
 export function formatAgentModelName(baseName: string, _modelType: TCOParams["modelType"]) {
   return baseName.trim();

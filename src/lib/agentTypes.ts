@@ -1,4 +1,4 @@
-import { TCOParams } from "@/lib/tco-calculations";
+import { TCOParams } from "@/lib/tco-calculations.js";
 
 export type AgentWorkflowMode = "compare" | "configure";
 export type AgentTargetSlot = "both" | "model1" | "model2";

@@ -1,10 +1,10 @@
 import OpenAI from "openai";
-import { defaultParams, TCOParams } from "./tco-calculations";
+import { defaultParams, TCOParams } from "./tco-calculations.js";
 import {
   AgentGenerationRequest,
   AgentGenerationResponse,
   AgentSuggestion,
-} from "./agentTypes";
+} from "./agentTypes.js";
 
 const gpuFallbackByModelType: Record<TCOParams["modelType"], number> = {
   api: 0,

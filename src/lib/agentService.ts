@@ -1,4 +1,4 @@
-import { defaultParams, TCOParams } from "@/lib/tco-calculations";
+import { defaultParams, TCOParams } from "@/lib/tco-calculations.js";
 import {
   AgentGenerationRequest,
   AgentGenerationResponse,
@@ -6,8 +6,8 @@ import {
   AgentSuggestion,
   AgentWorkflowMode,
   agentSystemPrompt,
-} from "@/lib/agentTypes";
-import { resolveAgentModelNames } from "./agentNaming";
+} from "@/lib/agentTypes.js";
+import { resolveAgentModelNames } from "./agentNaming.js";
 
 const AGENT_ENDPOINT = "/api/agent";
 

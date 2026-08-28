@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { handleAgentRuntimeRequest } from "../src/lib/agentRuntime";
-import type { AgentGenerationRequest } from "../src/lib/agentTypes";
+import { handleAgentRuntimeRequest } from "../src/lib/agentRuntime.js";
+import type { AgentGenerationRequest } from "../src/lib/agentTypes.js";
 
 type AgentRequest = IncomingMessage & {
   body?: unknown;
