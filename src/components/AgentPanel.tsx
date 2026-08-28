@@ -71,41 +71,6 @@ const compareQuestions: AgentQuestionDefinition[] = [
   },
 ];
 
-const knownModelAliases = [
-  ["gpt-4", "gpt-4o", "gpt-4.1", "gpt-5", "openai"],
-  ["claude", "sonnet", "haiku", "opus", "anthropic"],
-  ["llama", "llama-2", "llama-3", "llama 3.1", "meta"],
-  ["gemini", "google"],
-  ["mistral", "mixtral"],
-  ["qwen", "alibaba"],
-  ["deepseek"],
-  ["command-r", "command r", "cohere"],
-  ["grok", "xai", "x.ai"],
-] as const;
-
-function splitRequestedModels(value: string) {
-  return value
-    .split(/\s+vs\s+|\s+against\s+|\sand\s|,|\//i)
-    .map((part) => part.trim())
-    .filter(Boolean);
-}
-
-function findUnknownModels(value: string) {
-  const requested = splitRequestedModels(value);
-  if (requested.length === 0) {
-    return [];
-  }
-
-  const unknown = requested.filter((candidate) => {
-    const normalized = candidate.toLowerCase();
-    return !knownModelAliases.some((aliasGroup) =>
-      aliasGroup.some((alias) => normalized.includes(alias)),
-    );
-  });
-
-  return unknown;
-}
-
 const configureQuestions: AgentQuestionDefinition[] = [
   {
     key: "application",
@@ -202,16 +167,6 @@ export function AgentPanel({ model1Name, model2Name, onApplySuggestion }: AgentP
   const handleGenerate = async (nextAnswers: Record<string, string>) => {
     if (!mode) return;
 
-    if (mode === "compare") {
-      const unknownModels = findUnknownModels(nextAnswers.models ?? "");
-      if (unknownModels.length > 0) {
-        setError(`Model not found: ${unknownModels.join(", ")}. Please update the model comparison and try again.`);
-        setStepIndex(0);
-        setCurrentValue(nextAnswers.models ?? "");
-        return;
-      }
-    }
-
     setIsGenerating(true);
     setError(null);
     setSuggestion(null);
@@ -242,14 +197,6 @@ export function AgentPanel({ model1Name, model2Name, onApplySuggestion }: AgentP
     if (!nextValue) {
       setError("Please answer the current question before continuing.");
       return;
-    }
-
-    if (mode === "compare" && currentQuestion.key === "models") {
-      const unknownModels = findUnknownModels(nextValue);
-      if (unknownModels.length > 0) {
-        setError(`Model not found: ${unknownModels.join(", ")}. Please enter a supported model family.`);
-        return;
-      }
     }
 
     const nextAnswers = {

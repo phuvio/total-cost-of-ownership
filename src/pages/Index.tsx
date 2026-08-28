@@ -71,7 +71,7 @@ const Index = () => {
     if (targetSlot === "model1") {
       setParams1(nextModel1);
       setModel1Name(suggestion.model1Name);
-      setModel2Ever(false);
+      setModel2Ever(true);
       setDays(nextModel1.days);
       setActiveModel(1);
       setActiveTab("calculator");
@@ -80,7 +80,7 @@ const Index = () => {
 
     setParams2(nextModel2);
     setModel2Name(suggestion.model2Name);
-    setModel2Ever(false);
+    setModel2Ever(true);
     setDays(nextModel2.days);
     setActiveModel(2);
     setActiveTab("calculator");

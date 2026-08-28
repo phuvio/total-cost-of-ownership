@@ -230,19 +230,14 @@ function buildFallbackSuggestion(request: AgentGenerationRequest): AgentSuggesti
 
 function parseResponse(payload: unknown): AgentSuggestion {
   const candidate = payload as Partial<AgentGenerationResponse> | null | undefined;
+
   const model1Params = normalizeParams(candidate?.model1Params);
   const model2Params = normalizeParams(candidate?.model2Params);
-  const names = resolveAgentModelNames(
-    candidate?.model1Name || "Model 1",
-    candidate?.model2Name || "Model 2",
-    model1Params.modelType,
-    model2Params.modelType,
-  );
 
   return {
-    model1Name: names.model1Name,
+    model1Name: candidate?.model1Name || "Model 1",
     model1Params,
-    model2Name: names.model2Name,
+    model2Name: candidate?.model2Name || "Model 2",
     model2Params,
     reasoning: {
       model1: candidate?.reasoning?.model1 || "Suggested by the agent.",

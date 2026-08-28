@@ -43,6 +43,8 @@ function isAgentRequest(payload: unknown): payload is AgentGenerationRequest {
 }
 
 export default async function handler(req: AgentRequest, res: ServerResponse<IncomingMessage>) {
+  console.log("[agent] OpenAI API key configured:", Boolean(process.env.OPENAI_API_KEY));
+
   if (req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed" });
     return;
