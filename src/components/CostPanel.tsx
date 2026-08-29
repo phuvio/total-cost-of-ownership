@@ -9,19 +9,24 @@ interface Props {
   model2Name: string;
 }
 
-function fmtFi(n: number, decimals = 2): string {
-  return n.toLocaleString('fi-FI', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + ' €';
+function fmtEuro(n: number, decimals = 2): string {
+  return n.toLocaleString('en-GB', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
 
 function fmt(n: number): string {
-  if (n >= 1_000_000) return fmtFi(n, 0);
-  if (n >= 1_000) return fmtFi(n, 0);
-  if (n >= 1) return fmtFi(n, 2);
-  return fmtFi(n, 4);
+  if (n >= 1_000_000) return fmtEuro(n, 0);
+  if (n >= 1_000) return fmtEuro(n, 0);
+  if (n >= 1) return fmtEuro(n, 2);
+  return fmtEuro(n, 4);
 }
 
 function fmtNum(n: number): string {
-  return n.toLocaleString('fi-FI', { maximumFractionDigits: 0 });
+  return n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
 }
 
 function ModelResults({

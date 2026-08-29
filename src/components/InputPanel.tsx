@@ -68,6 +68,7 @@ export function InputPanel({
 }: Props) {
   const [lockedFields, setLockedFields] = useState<Partial<Record<NumericFieldKey, boolean>>>({});
 
+  const [currencyInputs, setCurrencyInputs] = useState<Partial<Record<NumericFieldKey, string>>>({});
   const activeParams = activeModel === 1 ? params1 : params2;
   const otherParams = activeModel === 1 ? params2 : params1;
 
@@ -109,12 +110,74 @@ export function InputPanel({
 
   const handleReset = () => {
     setLockedFields({});
+    setCurrencyInputs({});
     onReset();
   };
 
   // tco.ts sums impl hours internally (optimizationImplHours + architectureImplHours).
   // InputPanel must NOT touch engineeringHoursOneTime when toggling or editing impl hours.
   // engineeringHoursOneTime is purely the base hours field (e.g. 40h for API, 200h for self-hosted).
+
+  const isCurrencyField = (key: NumericFieldKey) => 
+    key === "inputTokenPrice" ||
+    key === "outputTokenPrice" ||
+    key === "avgCostPerToolCall" ||
+    key === "costPerHour" ||
+    key === "gpuPrice" ||
+    key === "dataPreparationCost" ||
+    key === "hardwareCost";
+    
+  const formatCurrencyInput = (value: number): string => {
+    return value.toLocaleString('en-GB', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 6,
+    });
+  };
+
+  const parseCurrencyInput = (value: string): number => {
+    const normalized = value.replace(/,/g, '').trim();
+
+    if (normalized === '' || normalized === '.' || normalized === '-') {
+      return 0;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const handleCurrencyChange = <K extends NumericFieldKey>(key: K, rawValue: string) => {
+    setCurrencyInputs((current) => ({
+      ...current,
+      [key]: rawValue,
+    }));
+
+    if (rawValue === '' || rawValue === '.' || rawValue === '-') {
+      return;
+    }
+
+    const parsed = parseCurrencyInput(rawValue);
+    if (Number.isFinite(parsed)) {
+      updateNumericField(key, parsed);
+    }
+  };
+
+  const handleCurrencyBlur = <K extends NumericFieldKey>(key: K) => {
+    const rawValue = currencyInputs[key];
+
+    if (rawValue === undefined) {
+      return;
+    }
+
+    const parsed = parseCurrencyInput(rawValue);
+
+    setCurrencyInputs((current) => ({
+      ...current,
+      [key]: formatCurrencyInput(parsed),
+    }));
+
+    updateNumericField(key, parsed);
+    
+  };
 
   const numField = (label: string, key: NumericFieldKey, step?: string) => {
     const fallbackValues: Partial<Record<NumericFieldKey, number>> = {
@@ -124,17 +187,38 @@ export function InputPanel({
     const value = (activeParams[key] ?? fallbackValues[key] ?? 0) as number;
     const valuesMatch = params1[key] === params2[key];
     const isLocked = lockedFields[key] ?? false;
+    const currencyField = isCurrencyField(key);
+
+    const displayValue = currencyField && currencyInputs[key] !== undefined
+      ? currencyInputs[key]
+      : currencyField
+        ? formatCurrencyInput(value)
+        : value;
 
     return (
       <div className="grid grid-cols-2 items-center gap-2">
         <Label className="param-label">{label}</Label>
         <div className="relative">
           <Input
-            type="number"
+            type={currencyField ? "text" : "number"}
+            inputMode={currencyField ? "decimal" : undefined}
             className="param-input pr-10"
-            value={value}
-            step={step || "any"}
-            onChange={(e) => updateNumericField(key, parseFloat(e.target.value) || 0)}
+            value={displayValue}
+            step={currencyField ? undefined : step || "any"}
+            onChange={(e) =>
+              {
+                if (currencyField) {
+                  handleCurrencyChange(key, e.target.value);
+                } else {
+                  updateNumericField(key, parseFloat(e.target.value) || 0);
+                }
+              }
+            }
+            onBlur={
+              currencyField
+                ? () => handleCurrencyBlur(key)
+                : undefined
+            }
           />
           {valuesMatch && (
             <button
