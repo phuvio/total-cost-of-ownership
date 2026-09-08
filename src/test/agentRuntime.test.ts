@@ -1,35 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { handleAgentRuntimeRequest } from "@/lib/agentRuntime";
 
 describe("agentRuntime", () => {
-  it("normalizes returned model names to include deployment labels", async () => {
-    const originalFetch = globalThis.fetch;
-    const originalApiKey = process.env.ANTHROPIC_API_KEY;
-    process.env.ANTHROPIC_API_KEY = "test-key";
-    globalThis.fetch = vi.fn((input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-
-      if (url.includes("api.anthropic.com")) {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({
-            content: [
-              {
-                text: JSON.stringify({
-                  model1Name: "Custom name",
-                  model1Params: { modelType: "cloud" },
-                  model2Name: "Another name",
-                  model2Params: { modelType: "self-hosted" },
-                  reasoning: { model1: "ok", model2: "ok" },
-                }),
-              },
-            ],
-          }),
-        } as Response);
-      }
-
-      return Promise.resolve({ ok: false, text: () => Promise.resolve("") } as Response);
-    }) as typeof fetch;
+  it("builds labeled model names when OpenAI is unavailable", async () => {
+    const originalApiKey = process.env.OPENAI_API_KEY;
+    delete process.env.OPENAI_API_KEY;
 
     try {
       const suggestion = await handleAgentRuntimeRequest({
@@ -40,14 +15,15 @@ describe("agentRuntime", () => {
         answers: [
           { key: "application", value: "support assistant", label: "Application" },
           { key: "users", value: "1000", label: "Users" },
+          { key: "existingGpuInfra", value: "yes", label: "Existing GPU infrastructure" },
         ],
       });
 
-      expect(suggestion.model1Name).toBe("Custom name");
-      expect(suggestion.model2Name).toBe("Another name");
+      expect(suggestion.model1Name).toBe("GPT-5.4 (API)");
+      expect(suggestion.model2Name).toBe("Llama 3.1 70B (Self-hosted)");
+      expect(suggestion.fallbackUsed).toBe(true);
     } finally {
-      globalThis.fetch = originalFetch;
-      process.env.ANTHROPIC_API_KEY = originalApiKey;
+      process.env.OPENAI_API_KEY = originalApiKey;
     }
   });
 });
