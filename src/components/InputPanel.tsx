@@ -68,7 +68,7 @@ export function InputPanel({
 }: Props) {
   const [lockedFields, setLockedFields] = useState<Partial<Record<NumericFieldKey, boolean>>>({});
 
-  const [currencyInputs, setCurrencyInputs] = useState<Partial<Record<NumericFieldKey, string>>>({});
+  const [currencyInputs, setCurrencyInputs] = useState<Partial<Record<`${1 | 2}-${NumericFieldKey}`, string>>>({});
   const activeParams = activeModel === 1 ? params1 : params2;
   const otherParams = activeModel === 1 ? params2 : params1;
 
@@ -82,7 +82,7 @@ export function InputPanel({
 
   const updateNumericField = <K extends NumericFieldKey>(key: K, value: number) => {
     const nextActiveParams = { ...activeParams, [key]: value } as TCOParams;
-    if (lockedFields[key] && activeParams[key] === otherParams[key]) {
+    if (lockedFields[key]) {
       const nextOtherParams = { ...otherParams, [key]: value } as TCOParams;
       if (activeModel === 1) {
         onParams1Change(nextActiveParams);
@@ -98,9 +98,15 @@ export function InputPanel({
   };
 
   const toggleNumericLock = <K extends NumericFieldKey>(key: K) => {
-    if (activeParams[key] !== otherParams[key]) {
+    if (lockedFields[key]) {
+      setLockedFields((current) => ({
+        ...current,
+        [key]: false,
+      }));
       return;
     }
+
+    if (activeParams[key] !== otherParams[key]) return;
 
     setLockedFields((current) => ({
       ...current,
@@ -146,9 +152,10 @@ export function InputPanel({
   };
 
   const handleCurrencyChange = <K extends NumericFieldKey>(key: K, rawValue: string) => {
+    const inputKey = `${activeModel}-${key}` as `${1 | 2}-${NumericFieldKey}`;
     setCurrencyInputs((current) => ({
       ...current,
-      [key]: rawValue,
+      [inputKey]: rawValue,
     }));
 
     if (rawValue === '' || rawValue === '.' || rawValue === '-') {
@@ -162,7 +169,8 @@ export function InputPanel({
   };
 
   const handleCurrencyBlur = <K extends NumericFieldKey>(key: K) => {
-    const rawValue = currencyInputs[key];
+    const inputKey = `${activeModel}-${key}` as `${1 | 2}-${NumericFieldKey}`;
+    const rawValue = currencyInputs[inputKey];
 
     if (rawValue === undefined) {
       return;
@@ -172,7 +180,7 @@ export function InputPanel({
 
     setCurrencyInputs((current) => ({
       ...current,
-      [key]: formatCurrencyInput(parsed),
+      [inputKey]: formatCurrencyInput(parsed),
     }));
 
     updateNumericField(key, parsed);
@@ -185,12 +193,12 @@ export function InputPanel({
       numberOfGpus: 1,
     };
     const value = (activeParams[key] ?? fallbackValues[key] ?? 0) as number;
-    const valuesMatch = params1[key] === params2[key];
     const isLocked = lockedFields[key] ?? false;
     const currencyField = isCurrencyField(key);
 
-    const displayValue = currencyField && currencyInputs[key] !== undefined
-      ? currencyInputs[key]
+    const inputKey = `${activeModel}-${key}` as `${1 | 2}-${NumericFieldKey}`;
+    const displayValue = currencyField && currencyInputs[inputKey] !== undefined
+      ? currencyInputs[inputKey]
       : currencyField
         ? formatCurrencyInput(value)
         : value;
@@ -220,18 +228,16 @@ export function InputPanel({
                 : undefined
             }
           />
-          {valuesMatch && (
-            <button
-              type="button"
-              aria-label={isLocked ? `Unlock ${label}` : `Lock ${label}`}
-              aria-pressed={isLocked}
-              title={isLocked ? `Unlock ${label}` : `Lock ${label}`}
-              onClick={() => toggleNumericLock(key)}
-              className="absolute inset-y-0 right-2 flex items-center text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {isLocked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
-            </button>
-          )}
+          <button
+            type="button"
+            aria-label={isLocked ? `Unlock ${label}` : `Lock ${label}`}
+            aria-pressed={isLocked}
+            title={isLocked ? `Unlock ${label}` : `Lock ${label}`}
+            onClick={() => toggleNumericLock(key)}
+            className="absolute inset-y-0 right-2 flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {isLocked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
+          </button>
         </div>
       </div>
     );
