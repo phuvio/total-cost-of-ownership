@@ -42,6 +42,7 @@ const Index = () => {
     setActiveModel(1);
     setModel2Ever(true);
     setDays(model1Params.days);
+    setCurrency("EUR");
     setActiveTab("calculator");
   };
 
