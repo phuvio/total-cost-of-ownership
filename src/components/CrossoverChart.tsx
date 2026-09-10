@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, ReferenceLine, Line, ComposedChart, PieChart, Pie, Cell,
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Currency, currencySymbol, formatCurrency } from "@/lib/currency";
 
 interface Props {
   params1: TCOParams;
@@ -13,12 +14,14 @@ interface Props {
   model2Ever: boolean;
   model1Name: string;
   model2Name: string;
+  currency: Currency;
 }
 
-function fmtAxis(n: number): string {
-  if (n >= 1_000_000) return `€${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `€${(n / 1_000).toFixed(0)}k`;
-  return `€${n.toFixed(0)}`;
+function fmtAxis(n: number, currency: Currency): string {
+  const symbol = currencySymbol(currency);
+  if (n >= 1_000_000) return `${symbol}${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${symbol}${(n / 1_000).toFixed(0)}k`;
+  return formatCurrency(n, currency, 0);
 }
 
 const PIE_COLORS = [
@@ -62,7 +65,7 @@ const X_AXIS_OPTIONS: { value: XAxisKey; label: string; unit: string; min: numbe
   { value: "days",           label: "Days",                    unit: "days", min: 0,   max: 365,   step: 1 },
   { value: "requestsPerDay", label: "Requests per day",       unit: "req",  min: 500, max: 100000, step: 500 },
   { value: "cacheHitRate",   label: "Cache hit rate",         unit: "%",   min: 0,   max: 90,    step: 5 },
-  { value: "costPerHour",    label: "Engineering cost / hour", unit: "€",   min: 50,  max: 500,   step: 10 },
+  { value: "costPerHour",    label: "Engineering cost / hour", unit: "",    min: 50,  max: 500,   step: 10 },
 ];
 
 const N_POINTS = 40;
@@ -109,7 +112,7 @@ function findCrossover(pts1: ChartPoint[], pts2: ChartPoint[]) {
   return null;
 }
 
-function formatXAxisValue(value: number, xKey: XAxisKey) {
+function formatXAxisValue(value: number, xKey: XAxisKey, currency: Currency) {
   if (xKey === "requestsPerDay") {
     return value >= 1000 ? `${Math.round(value / 100) / 10}k` : `${Math.round(value)}`;
   }
@@ -117,7 +120,7 @@ function formatXAxisValue(value: number, xKey: XAxisKey) {
     return `${Math.round(value)}%`;
   }
   if (xKey === "costPerHour") {
-    return `€${Math.round(value)}`;
+    return formatCurrency(value, currency, 0);
   }
   return `${Math.round(value)}`;
 }
@@ -129,9 +132,10 @@ function getCrossoverSummary(
   xKey: XAxisKey,
   model1Name: string,
   model2Name: string,
+  currency: Currency,
 ) {
   if (crossover !== null) {
-    return `Break-even: ${formatXAxisValue(crossover, xKey)} — models have equal total cost there`;
+    return `Break-even: ${formatXAxisValue(crossover, xKey, currency)} — models have equal total cost there`;
   }
 
   const firstDiff = pts1[0].total - pts2[0].total;
@@ -241,6 +245,7 @@ export function CrossoverChart({
   model2Ever,
   model1Name,
   model2Name,
+  currency,
 }: Props) {
   const [xAxisKey, setXAxisKey] = useState<XAxisKey>("days");
   const showBoth = model2Ever;
@@ -308,9 +313,9 @@ export function CrossoverChart({
   const crossoverReason = useMemo(
     () =>
       showBoth
-        ? getCrossoverSummary(crossoverValue, points1, points2, xAxisKey, model1Name, model2Name)
+        ? getCrossoverSummary(crossoverValue, points1, points2, xAxisKey, model1Name, model2Name, currency)
         : null,
-    [crossoverValue, points1, points2, xAxisKey, model1Name, model2Name, showBoth],
+    [crossoverValue, points1, points2, xAxisKey, model1Name, model2Name, currency, showBoth],
   );
 
   const tooltipLabels: Record<string, string> = {
@@ -404,13 +409,13 @@ export function CrossoverChart({
               type="number"
               domain={[xRange.min, xRange.max]}
               tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }}
-              tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey)}
+              tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey, currency)}
               label={{ value: xAxisOption.label, position: 'insideBottom', offset: -4, style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' } }}
             />
-            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
+            <YAxis tickFormatter={(value) => fmtAxis(Number(value), currency)} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
-              formatter={(v: number, name: string) => [fmtAxis(v), name]}
-              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey)}`}
+              formatter={(v: number, name: string) => [fmtAxis(v, currency), name]}
+              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey, currency)}`}
               contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
             <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />
@@ -425,7 +430,7 @@ export function CrossoverChart({
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Break-even: ${formatXAxisValue(crossoverValue, xAxisKey)}`,
+                  value: `Break-even: ${formatXAxisValue(crossoverValue, xAxisKey, currency)}`,
                   position: 'insideTop',
                   offset: 8,
                   style: { fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', fill: 'hsl(var(--foreground))' },
@@ -462,11 +467,11 @@ export function CrossoverChart({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-            <XAxis dataKey="x" type="number" domain={[xRange.min, xRange.max]} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey)} />
-            <YAxis tickFormatter={fmtAxis} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
+            <XAxis dataKey="x" type="number" domain={[xRange.min, xRange.max]} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} tickFormatter={(value) => formatXAxisValue(Number(value), xAxisKey, currency)} />
+            <YAxis tickFormatter={(value) => fmtAxis(Number(value), currency)} tick={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} width={48} />
             <Tooltip
-              formatter={(v: number, name: string) => [fmtAxis(v), tooltipLabels[name] || name]}
-              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey)}`}
+              formatter={(v: number, name: string) => [fmtAxis(v, currency), tooltipLabels[name] || name]}
+              labelFormatter={(l) => `${xAxisOption.label}: ${formatXAxisValue(Number(l), xAxisKey, currency)}`}
               contentStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)', borderRadius: 8 }}
             />
             <Legend wrapperStyle={{ fontSize: CHART_FONT_SIZE, fontFamily: 'var(--font-display)' }} />

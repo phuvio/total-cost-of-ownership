@@ -5,6 +5,8 @@ import { CalculatorPage } from "./Calculator";
 import { ScenariosPage } from "./Scenarios";
 import { AgentPage } from "./Agent";
 import { AgentSuggestion, AgentTargetSlot } from "@/lib/agentTypes";
+import { Currency } from "@/lib/currency";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
   const [days, setDays] = useState(defaultParams.days);
@@ -15,6 +17,7 @@ const Index = () => {
   const [model1Name, setModel1Name] = useState("Model 1");
   const [model2Name, setModel2Name] = useState("Model 2");
   const [largeFont, setLargeFont] = useState(false);
+  const [currency, setCurrency] = useState<Currency>("EUR");
   const [activeTab, setActiveTab] = useState<"calculator" | "scenarios" | "agent">("calculator");
 
   useEffect(() => {
@@ -101,6 +104,15 @@ const Index = () => {
         >
           {largeFont ? "Large text on" : "Large text off"}
         </button>
+        <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
+          <SelectTrigger className="h-8 w-[116px] text-xs" aria-label="Currency">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="EUR">Euro (EUR)</SelectItem>
+            <SelectItem value="USD">Dollar (USD)</SelectItem>
+          </SelectContent>
+        </Select>
       </header>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "calculator" | "scenarios" | "agent") }>
@@ -129,6 +141,7 @@ const Index = () => {
               onReset={handleReset}
               setParams1={setParams1}
               setParams2={setParams2}
+              currency={currency}
             />
           </TabsContent>
 

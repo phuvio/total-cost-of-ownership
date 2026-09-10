@@ -2,6 +2,7 @@ import { TCOParams } from "@/lib/tco-calculations";
 import { InputPanel } from "@/components/InputPanel";
 import { CostPanel } from "@/components/CostPanel";
 import { CrossoverChart } from "@/components/CrossoverChart";
+import { Currency } from "@/lib/currency";
 
 interface CalculatorProps {
   params1: TCOParams;
@@ -18,6 +19,7 @@ interface CalculatorProps {
   onReset: () => void;
   setParams1: (params: TCOParams) => void;
   setParams2: (params: TCOParams) => void;
+  currency: Currency;
 }
 
 export function CalculatorPage({
@@ -35,6 +37,7 @@ export function CalculatorPage({
   onReset,
   setParams1,
   setParams2,
+  currency,
 }: CalculatorProps) {
   const p1 = { ...params1, days };
   const p2 = { ...params2, days };
@@ -56,6 +59,7 @@ export function CalculatorPage({
           onModel1NameChange={onModel1NameChange}
           onModel2NameChange={onModel2NameChange}
           onReset={onReset}
+          currency={currency}
         />
       </div>
       <div className="border-r overflow-auto">
@@ -66,6 +70,7 @@ export function CalculatorPage({
           model2Ever={model2Ever}
           model1Name={model1Name}
           model2Name={model2Name}
+          currency={currency}
         />
       </div>
       <div className="overflow-hidden">
@@ -76,6 +81,7 @@ export function CalculatorPage({
           model2Ever={model2Ever}
           model1Name={model1Name}
           model2Name={model2Name}
+          currency={currency}
         />
       </div>
     </div>

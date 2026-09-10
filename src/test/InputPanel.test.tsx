@@ -3,7 +3,7 @@ import { useState } from "react";
 import { InputPanel } from "@/components/InputPanel";
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 
-function TestHarness() {
+function TestHarness({ currency = "EUR" }: { currency?: "EUR" | "USD" }) {
   const [params1, setParams1] = useState<TCOParams>({
     ...defaultParams,
     modelType: "api",
@@ -29,6 +29,7 @@ function TestHarness() {
       onModel1NameChange={() => undefined}
       onModel2NameChange={() => undefined}
       onReset={() => undefined}
+      currency={currency}
     />
   );
 }
@@ -42,6 +43,13 @@ function getOutputPriceInput() {
 }
 
 describe("InputPanel model prices", () => {
+  it("uses the selected currency in monetary input labels", () => {
+    render(<TestHarness currency="USD" />);
+
+    expect(screen.getByText("Input token price ($/1M tok)")).toBeInTheDocument();
+    expect(screen.getByText("Output token price ($/1M tok)")).toBeInTheDocument();
+  });
+
   it("keeps API and self-hosted prices independent by default", () => {
     render(<TestHarness />);
 

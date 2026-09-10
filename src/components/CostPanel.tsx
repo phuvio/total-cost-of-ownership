@@ -1,4 +1,5 @@
 import { calculateTCO, crossoverBetweenModels, TCOParams } from "@/lib/tco-calculations";
+import { Currency, formatCurrency } from "@/lib/currency";
 
 interface Props {
   params1: TCOParams;
@@ -7,22 +8,14 @@ interface Props {
   model2Ever: boolean;
   model1Name: string;
   model2Name: string;
+  currency: Currency;
 }
 
-function fmtEuro(n: number, decimals = 2): string {
-  return n.toLocaleString('en-GB', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return fmtEuro(n, 0);
-  if (n >= 1_000) return fmtEuro(n, 0);
-  if (n >= 1) return fmtEuro(n, 2);
-  return fmtEuro(n, 4);
+function fmt(n: number, currency: Currency): string {
+  if (n >= 1_000_000) return formatCurrency(n, currency, 0);
+  if (n >= 1_000) return formatCurrency(n, currency, 0);
+  if (n >= 1) return formatCurrency(n, currency, 2);
+  return formatCurrency(n, currency, 4);
 }
 
 function fmtNum(n: number): string {
@@ -34,11 +27,13 @@ function ModelResults({
   r,
   days,
   highlight,
+  currency,
 }: {
   label: string;
   r: ReturnType<typeof calculateTCO>;
   days: number;
   highlight: boolean;
+  currency: Currency;
 }) {
   const inferencePer10k = r.optimizedCostPerRequest * 10000;
 
@@ -54,14 +49,14 @@ function ModelResults({
       <div className="grid grid-cols-2 gap-3">
         <div className="metric-card">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(r.totalSetupCost)}
+            {fmt(r.totalSetupCost, currency)}
           </div>
           <div className="metric-label">Setup Cost (one-time)</div>
         </div>
 
         <div className="metric-card">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(inferencePer10k)}
+            {fmt(inferencePer10k, currency)}
           </div>
           <div className="metric-label">Inference Cost / 10,000 Req</div>
         </div>
@@ -75,14 +70,14 @@ function ModelResults({
 
         <div className="metric-card">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(r.recurringEngineeringCost)}
+            {fmt(r.recurringEngineeringCost, currency)}
           </div>
           <div className="metric-label">Recurring Ops ({days} days)</div>
         </div>
 
         <div className="metric-card col-span-2">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(r.totalInferenceCost)}
+            {fmt(r.totalInferenceCost, currency)}
           </div>
           <div className="metric-label">Total Inference Cost ({days} days)</div>
         </div>
@@ -90,11 +85,11 @@ function ModelResults({
 
       <div className="param-section space-y-2 text-xs text-muted-foreground" style={{ fontFamily: "var(--font-display)" }}>
         <p className="font-semibold text-foreground text-sm">
-          Total TCO ({days} days): {fmt(r.tco)}
+          Total TCO ({days} days): {fmt(r.tco, currency)}
         </p>
         <p>
-          Engineering (one-time): {fmt(r.oneTimeEngineeringCost)} · Recurring:{" "}
-          {fmt(r.recurringEngineeringCost)}
+          Engineering (one-time): {fmt(r.oneTimeEngineeringCost, currency)} · Recurring:{" "}
+          {fmt(r.recurringEngineeringCost, currency)}
         </p>
       </div>
     </div>
@@ -108,6 +103,7 @@ export function CostPanel({
   model2Ever,
   model1Name,
   model2Name,
+  currency,
 }: Props) {
   const r1 = calculateTCO(params1);
   const r2 = calculateTCO(params2);
@@ -153,12 +149,12 @@ export function CostPanel({
         </div>
       )}
 
-      <ModelResults label={model1Name} r={r1} days={days} highlight={activeModel === 1} />
+      <ModelResults label={model1Name} r={r1} days={days} highlight={activeModel === 1} currency={currency} />
 
       {model2Ever && (
         <>
           <div className="border-t my-4" />
-          <ModelResults label={model2Name} r={r2} days={days} highlight={activeModel === 2} />
+          <ModelResults label={model2Name} r={r2} days={days} highlight={activeModel === 2} currency={currency} />
         </>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
+import { Currency, currencySymbol } from "@/lib/currency";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +26,7 @@ interface Props {
   onModel1NameChange: (n: string) => void;
   onModel2NameChange: (n: string) => void;
   onReset: () => void;
+  currency: Currency;
 }
 
 function Section({
@@ -65,6 +67,7 @@ export function InputPanel({
   onModel1NameChange,
   onModel2NameChange,
   onReset,
+  currency,
 }: Props) {
   const [lockedFields, setLockedFields] = useState<Partial<Record<NumericFieldKey, boolean>>>({});
 
@@ -132,6 +135,8 @@ export function InputPanel({
     key === "gpuPrice" ||
     key === "dataPreparationCost" ||
     key === "hardwareCost";
+
+  const unit = currencySymbol(currency);
     
   const formatCurrencyInput = (value: number): string => {
     return value.toLocaleString('en-GB', {
@@ -370,8 +375,8 @@ export function InputPanel({
                 </SelectContent>
               </Select>
             </div>
-            {numField("Input token price (€/1M tok)", "inputTokenPrice", "0.1")}
-            {numField("Output token price (€/1M tok)", "outputTokenPrice", "0.1")}
+            {numField(`Input token price (${unit}/1M tok)`, "inputTokenPrice", "0.1")}
+            {numField(`Output token price (${unit}/1M tok)`, "outputTokenPrice", "0.1")}
             {numField("Context length (tokens)", "contextLength", "1")}
             {numField("Response length (tokens)", "responseLength", "1")}
           </div>
@@ -415,7 +420,7 @@ export function InputPanel({
             {activeParams.toolCalls &&
               numField("Tool calls / request (avg)", "toolCallsPerRequest", "1")}
             {activeParams.toolCalls &&
-              numField("Avg cost per tool call (€)", "avgCostPerToolCall", "0.0001")}
+              numField(`Avg cost per tool call (${unit})`, "avgCostPerToolCall", "0.0001")}
             {activeParams.toolCalls &&
               numField("Implementation hours", "toolCallsImplHours", "1")}
           </div>
@@ -475,7 +480,7 @@ export function InputPanel({
             {activeParams.fineTuningReduction && activeParams.modelType !== "api" && (
               <>
                 {numField("Training GPU hours", "trainingGpuHours", "1")}
-                {numField("Data preparation cost (€)", "dataPreparationCost", "1")}
+                {numField(`Data preparation cost (${unit})`, "dataPreparationCost", "1")}
                 {numField("Implementation hours", "fineTuningImplHours", "1")}
               </>
             )}
@@ -500,10 +505,10 @@ export function InputPanel({
           <div className="param-grid">
             {numField("Engineering hours (one-time)", "engineeringHoursOneTime", "1")}
             {numField("Monthly ops hours", "engineeringHoursMonthlyOps", "1")}
-            {numField("Cost per hour (€/hr)", "costPerHour", "1")}
-            {activeParams.modelType !== "api" && numField("GPU price (€/hr)", "gpuPrice", "0.1")}
+            {numField(`Cost per hour (${unit}/hr)`, "costPerHour", "1")}
+            {activeParams.modelType !== "api" && numField(`GPU price (${unit}/hr)`, "gpuPrice", "0.1")}
             {activeParams.modelType !== "api" && numField("Number of GPUs", "numberOfGpus", "1")}
-            {activeParams.modelType === "self-hosted" && numField("Hardware costs (€)", "hardwareCost", "1")}
+            {activeParams.modelType === "self-hosted" && numField(`Hardware costs (${unit})`, "hardwareCost", "1")}
             {/* Tokens per second shown only for self-hosted/cloud */}
             {activeParams.modelType !== "api" &&
               numField("Tokens per second (GPU throughput)", "tokensPerSecond", "1")}
