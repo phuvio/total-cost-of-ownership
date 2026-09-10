@@ -423,6 +423,37 @@ export function calculateTCO(p: TCOParams) {
   };
 }
 
+export interface MonthlyTCOResult {
+  month: number;
+  days: number;
+  tco: number;
+}
+
+export function calculateTCOByMonth(
+  p: TCOParams,
+  totalDays = 720,
+  intervalDays = 30,
+): MonthlyTCOResult[] {
+  if (!Number.isInteger(totalDays) || totalDays <= 0) {
+    throw new Error("totalDays must be a positive integer");
+  }
+
+  if (!Number.isInteger(intervalDays) || intervalDays <= 0) {
+    throw new Error("intervalDays must be a positive integer");
+  }
+
+  const results: MonthlyTCOResult[] = [];
+  for (let days = intervalDays; days <= totalDays; days += intervalDays) {
+    results.push({
+      month: days / intervalDays,
+      days,
+      tco: calculateTCO({ ...p, days }).tco,
+    });
+  }
+
+  return results;
+}
+
 export function generateChartData(p: TCOParams) {
   const results = calculateTCO(p);
   const points: Array<{ day: number; cumulativeSetup: number; cumulativeInference: number; cumulativeTotal: number }> = [];

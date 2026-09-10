@@ -1,4 +1,4 @@
-import { calculateTCO, TCOParams } from "@/lib/tco-calculations";
+import { calculateTCO, crossoverBetweenModels, TCOParams } from "@/lib/tco-calculations";
 import { useMemo, useState } from "react";
 import {
   Area, CartesianGrid, Legend, ResponsiveContainer, Tooltip,
@@ -306,8 +306,14 @@ export function CrossoverChart({
   );
 
   const crossoverValue = useMemo(
-    () => (showBoth ? findCrossover(points1, points2) : null),
-    [points1, points2, showBoth],
+    () => {
+      if (!showBoth) return null;
+      if (xAxisKey === "days") {
+        return crossoverBetweenModels(params1, params2).crossoverDay;
+      }
+      return findCrossover(points1, points2);
+    },
+    [params1, params2, points1, points2, showBoth, xAxisKey],
   );
 
   const crossoverReason = useMemo(

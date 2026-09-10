@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateTCO,
+  calculateTCOByMonth,
   crossoverBetweenModels,
   defaultParams,
   generateChartData,
@@ -145,6 +146,19 @@ describe("calculateTCO", () => {
       { day: 1, cumulativeSetup: 1_000, cumulativeInference: 0.001, cumulativeTotal: 1_000.001 },
       { day: 2, cumulativeSetup: 1_000, cumulativeInference: 0.002, cumulativeTotal: 1_000.002 },
     ]);
+  });
+
+  it("calculates cumulative TCO at 30-day intervals through 720 days", () => {
+    const monthly = calculateTCOByMonth(createParams({
+      requestsPerDay: 0,
+      engineeringHoursOneTime: 1,
+      engineeringHoursMonthlyOps: 0,
+      costPerHour: 100,
+    }));
+
+    expect(monthly).toHaveLength(24);
+    expect(monthly[0]).toEqual({ month: 1, days: 30, tco: 100 });
+    expect(monthly.at(-1)).toEqual({ month: 24, days: 720, tco: 100 });
   });
 });
 

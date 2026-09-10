@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "tco:monthly": "tsx scripts/tco-monthly.ts",
+    "tco:scenarios": "tsx scripts/export-tco-scenarios.ts",
+    "tco:api-scenarios": "tsx scripts/export-api-scenarios.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -88,6 +91,7 @@
     "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.13",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",

@@ -62,6 +62,27 @@ The project explores how architectural and optimization decisions affect the tot
 - Recharts
 - Vite
 
+## Monthly TCO from the Terminal
+
+The monthly TCO function evaluates cumulative TCO every 30 days from day 30 through day 720. Provide a JSON file containing any model fields to override; omitted fields use the calculator defaults:
+
+```powershell
+npm run tco:monthly -- --file model.json
+```
+
+Example `model.json`:
+
+```json
+{
+  "modelType": "api",
+  "inputTokenPrice": 2.175,
+  "outputTokenPrice": 13.05,
+  "requestsPerDay": 10000
+}
+```
+
+The command prints JSON with 24 cumulative `tco` results, one for each 30-day period through 720 days. Model JSON can also be piped through standard input.
+
 ## Agent Endpoint
 
 The AI setup agent uses the `/api/agent` endpoint in development and production.
