@@ -70,7 +70,7 @@ function ModelResults({
 
         <div className="metric-card">
           <div className="text-sm font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
-            {fmt(r.recurringEngineeringCost, currency)}
+            {fmt(r.recurringOperationalCost, currency)}
           </div>
           <div className="metric-label">Recurring Ops ({days} days)</div>
         </div>
@@ -90,6 +90,9 @@ function ModelResults({
         <p>
           Engineering (one-time): {fmt(r.oneTimeEngineeringCost, currency)} · Recurring:{" "}
           {fmt(r.recurringEngineeringCost, currency)}
+        <p>
+          Recurring engineering: {fmt(r.recurringEngineeringCost, currency)} · Electricity: {fmt(r.energyCost, currency)} · Total ops: {fmt(r.recurringOperationalCost, currency)}
+        </p>
         </p>
       </div>
     </div>

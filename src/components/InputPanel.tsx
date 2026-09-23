@@ -84,9 +84,15 @@ export function InputPanel({
   };
 
   const updateNumericField = <K extends NumericFieldKey>(key: K, value: number) => {
-    const nextActiveParams = { ...activeParams, [key]: value } as TCOParams;
+    const nonNegativeEnergyFields = [
+      "gpuPowerKw",
+      "operatingHoursPerMonth",
+      "electricityPricePerKwh",
+    ];
+    const safeValue = nonNegativeEnergyFields.includes(String(key)) ? Math.max(0, value) : value;
+    const nextActiveParams = { ...activeParams, [key]: safeValue } as TCOParams;
     if (lockedFields[key]) {
-      const nextOtherParams = { ...otherParams, [key]: value } as TCOParams;
+      const nextOtherParams = { ...otherParams, [key]: safeValue } as TCOParams;
       if (activeModel === 1) {
         onParams1Change(nextActiveParams);
         onParams2Change(nextOtherParams);
@@ -133,6 +139,7 @@ export function InputPanel({
     key === "avgCostPerToolCall" ||
     key === "costPerHour" ||
     key === "gpuPrice" ||
+    key === "electricityPricePerKwh" ||
     key === "dataPreparationCost" ||
     key === "hardwareCost";
 
@@ -217,6 +224,7 @@ export function InputPanel({
             inputMode={currencyField ? "decimal" : undefined}
             className="param-input pr-10"
             value={displayValue}
+            min={key === "gpuPowerKw" || key === "operatingHoursPerMonth" || key === "electricityPricePerKwh" ? 0 : undefined}
             step={currencyField ? undefined : step || "any"}
             onChange={(e) =>
               {
@@ -509,6 +517,18 @@ export function InputPanel({
             {activeParams.modelType !== "api" && numField(`GPU price (${unit}/hr)`, "gpuPrice", "0.1")}
             {activeParams.modelType !== "api" && numField("Number of GPUs", "numberOfGpus", "1")}
             {activeParams.modelType === "self-hosted" && numField(`Hardware costs (${unit})`, "hardwareCost", "1")}
+            {activeParams.modelType === "self-hosted" && (
+              <>
+                {toggle("Include electricity costs", "includeElectricityCosts")}
+                {activeParams.includeElectricityCosts && (
+                  <>
+                    {numField("GPU power consumption (kW)", "gpuPowerKw", "0.01")}
+                    {numField("Operating hours / month", "operatingHoursPerMonth", "1")}
+                    {numField(`Electricity price (${unit}/kWh)`, "electricityPricePerKwh", "0.001")}
+                  </>
+                )}
+              </>
+            )}
             {/* Tokens per second shown only for self-hosted/cloud */}
             {activeParams.modelType !== "api" &&
               numField("Tokens per second (GPU throughput)", "tokensPerSecond", "1")}

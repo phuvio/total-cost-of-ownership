@@ -45,6 +45,7 @@ const PIE_KEY_INDEX: Record<string, number> = {
   compute: 5,
   engineeringOneTime: 6,
   engineeringRecurring: 7,
+  electricity: 8,
 };
 
 const PIE_LABELS: Record<string, string> = {
@@ -56,6 +57,7 @@ const PIE_LABELS: Record<string, string> = {
   compute: 'Compute',
   engineeringOneTime: 'Eng. (one-time)',
   engineeringRecurring: 'Eng. (recurring)',
+  electricity: 'Electricity',
   trainingAndSetup: 'Training & Setup',
 };
 

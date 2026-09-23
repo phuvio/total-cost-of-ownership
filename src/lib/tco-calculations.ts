@@ -65,6 +65,12 @@ export interface TCOParams {
   // Included here for documentation/UI purposes.
   numberOfGpus?: number;
 
+  // Optional self-hosted recurring electricity costs
+  includeElectricityCosts?: boolean;
+  gpuPowerKw?: number;
+  operatingHoursPerMonth?: number;
+  electricityPricePerKwh?: number;
+
   // Fine-tuning costs
   trainingGpuHours: number;
   finetuningCost?: number; // legacy field; ignored in calculations
@@ -162,6 +168,10 @@ export const defaultParams: TCOParams = {
   // Lambda Labs A100 80GB: ~$1.99/hr on-demand; A10G ~$0.76/hr (2024 rates)
   gpuPrice: 1.99,
   numberOfGpus: 1,
+  includeElectricityCosts: false,
+  gpuPowerKw: 0,
+  operatingHoursPerMonth: 0,
+  electricityPricePerKwh: 0,
 
   trainingGpuHours: 0,
   dataPreparationCost: 0,
@@ -250,7 +260,6 @@ export function calculateTCO(p: TCOParams) {
     ? effectiveThroughput * p.specDecodingThroughputGain
     : effectiveThroughput;
 
-  const gpuCount = Math.max(0, p.numberOfGpus ?? 1);
   const costPerSecond = p.gpuPrice / 3600;
   const totalTokens = finalInputTokens + finalOutputTokens;
   const inferenceSeconds = totalTokens / throughputWithSpecDecoding;
@@ -338,6 +347,18 @@ export function calculateTCO(p: TCOParams) {
   const months = p.days / 30.44;
   const recurringEngineeringCost = p.engineeringHoursMonthlyOps * p.costPerHour * months;
 
+  const gpuCount = Math.max(0, p.numberOfGpus ?? 1);
+  const gpuPowerKw = Math.max(0, p.gpuPowerKw ?? 0);
+  const operatingHoursPerMonth = Math.max(0, p.operatingHoursPerMonth ?? 0);
+  const electricityPricePerKwh = Math.max(0, p.electricityPricePerKwh ?? 0);
+  const monthlyElectricityCost =
+    p.modelType === 'self-hosted' && p.includeElectricityCosts
+      ? gpuCount * gpuPowerKw * operatingHoursPerMonth * electricityPricePerKwh
+      : 0;
+  const energyCost = monthlyElectricityCost * months;
+  const dailyEnergyCost = monthlyElectricityCost / 30.44;
+  const recurringOperationalCost = recurringEngineeringCost + energyCost;
+
   const totalEngineeringCost = oneTimeEngineeringCost + recurringEngineeringCost;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -360,11 +381,12 @@ export function calculateTCO(p: TCOParams) {
   const dailyInferenceCost = optimizedCostPerRequest * p.requestsPerDay;
 
   // Recurring ops amortized to daily cost for crossover calculation
-  const dailyOpsCost = (p.engineeringHoursMonthlyOps * p.costPerHour) / 30.44;
+  const dailyOpsCost =
+    (p.engineeringHoursMonthlyOps * p.costPerHour) / 30.44 + dailyEnergyCost;
   const dailyTotalCost = dailyInferenceCost + dailyOpsCost;
 
   const totalInferenceCost = dailyInferenceCost * p.days;
-  const tco = totalSetupCost + totalInferenceCost + recurringEngineeringCost;
+  const tco = totalSetupCost + totalInferenceCost + recurringOperationalCost;
 
   // Break-even: days until cumulative inference + ops exceeds setup cost
   const crossoverDays = dailyTotalCost > 0 ? totalSetupCost / dailyTotalCost : Infinity;
@@ -379,6 +401,7 @@ export function calculateTCO(p: TCOParams) {
     compute: computeCost * p.requestsPerDay * p.days,
     engineeringOneTime: oneTimeEngineeringCost,
     engineeringRecurring: recurringEngineeringCost,
+    electricity: energyCost,
     trainingAndSetup: cTrainingCompute + p.dataPreparationCost + p.hardwareCost,
   };
 
@@ -389,6 +412,10 @@ export function calculateTCO(p: TCOParams) {
     totalSetupCost,
     oneTimeEngineeringCost,
     recurringEngineeringCost,
+    monthlyElectricityCost,
+    energyCost,
+    dailyEnergyCost,
+    recurringOperationalCost,
     totalEngineeringCost,
 
     // Per-request
@@ -460,8 +487,7 @@ export function generateChartData(p: TCOParams) {
   const step = Math.max(1, Math.floor(p.days / 100));
 
   for (let d = 0; d <= p.days; d += step) {
-    const dailyOps = (p.engineeringHoursMonthlyOps * p.costPerHour) / 30.44;
-    const cumulativeInference = (results.dailyInferenceCost + dailyOps) * d;
+    const cumulativeInference = results.dailyTotalCost * d;
     points.push({
       day: d,
       cumulativeSetup: results.totalSetupCost,

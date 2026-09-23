@@ -160,6 +160,87 @@ describe("calculateTCO", () => {
     expect(monthly[0]).toEqual({ month: 1, days: 30, tco: 100 });
     expect(monthly.at(-1)).toEqual({ month: 24, days: 720, tco: 100 });
   });
+
+  it("keeps electricity at zero for API and disabled self-hosted deployments", () => {
+    const energyParams = {
+      modelType: "self-hosted" as const,
+      includeElectricityCosts: true,
+      numberOfGpus: 2,
+      gpuPowerKw: 0.4,
+      operatingHoursPerMonth: 720,
+      electricityPricePerKwh: 0.25,
+    };
+    const api = calculateTCO(createParams({ ...energyParams, modelType: "api" }));
+    const disabled = calculateTCO(createParams({ ...energyParams, includeElectricityCosts: false }));
+
+    expect(api.energyCost).toBe(0);
+    expect(disabled.energyCost).toBe(0);
+  });
+
+  it("adds electricity to recurring operations and TCO for self-hosted deployments", () => {
+    const params = createParams({
+      modelType: "self-hosted",
+      days: 30.44,
+      requestsPerDay: 0,
+      engineeringHoursMonthlyOps: 2,
+      costPerHour: 100,
+      includeElectricityCosts: true,
+      numberOfGpus: 3,
+      gpuPowerKw: 0.4,
+      operatingHoursPerMonth: 720,
+      electricityPricePerKwh: 0.25,
+    });
+    const result = calculateTCO(params);
+    const expectedMonthlyEnergy = 3 * 0.4 * 720 * 0.25;
+
+    expect(result.monthlyElectricityCost).toBe(expectedMonthlyEnergy);
+    expect(result.energyCost).toBeCloseTo(expectedMonthlyEnergy);
+    expect(result.recurringOperationalCost).toBeCloseTo(result.recurringEngineeringCost + expectedMonthlyEnergy);
+    expect(result.tco).toBeCloseTo(
+      result.totalSetupCost + result.totalInferenceCost + result.recurringEngineeringCost + expectedMonthlyEnergy,
+    );
+    expect(result.dailyTotalCost).toBeGreaterThan(0);
+  });
+
+  it("responds to energy in crossover and restores the baseline when disabled", () => {
+    const api = createParams({ requestsPerDay: 0, engineeringHoursOneTime: 20, costPerHour: 100 });
+    const selfHosted = createParams({
+      modelType: "self-hosted",
+      requestsPerDay: 0,
+      engineeringHoursOneTime: 10,
+      costPerHour: 100,
+      includeElectricityCosts: false,
+    });
+    const baseline = crossoverBetweenModels(api, selfHosted);
+    const withEnergy = crossoverBetweenModels(api, {
+      ...selfHosted,
+      includeElectricityCosts: true,
+      numberOfGpus: 2,
+      gpuPowerKw: 0.5,
+      operatingHoursPerMonth: 720,
+      electricityPricePerKwh: 0.25,
+    });
+    const restored = crossoverBetweenModels(api, selfHosted);
+
+    expect(withEnergy.crossoverDay).not.toBeNull();
+    expect(withEnergy.crossoverDay).not.toBe(baseline.crossoverDay);
+    expect(restored).toEqual(baseline);
+  });
+
+  it("treats zero electricity inputs as zero energy cost", () => {
+    const result = calculateTCO(createParams({
+      modelType: "self-hosted",
+      includeElectricityCosts: true,
+      numberOfGpus: 4,
+      gpuPowerKw: 0,
+      operatingHoursPerMonth: 0,
+      electricityPricePerKwh: 0,
+    }));
+
+    expect(result.monthlyElectricityCost).toBe(0);
+    expect(result.energyCost).toBe(0);
+    expect(result.dailyEnergyCost).toBe(0);
+  });
 });
 
 describe("crossoverBetweenModels", () => {

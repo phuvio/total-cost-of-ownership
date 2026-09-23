@@ -43,6 +43,16 @@ function getOutputPriceInput() {
 }
 
 describe("InputPanel model prices", () => {
+  it("shows electricity controls only for self-hosted models", () => {
+    render(<TestHarness />);
+
+    expect(screen.queryByText("Include electricity costs")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Self-hosted model" }));
+    fireEvent.click(screen.getByRole("button", { name: "Development Cost" }));
+    expect(screen.getByText("Include electricity costs")).toBeInTheDocument();
+  });
+
   it("uses the selected currency in monetary input labels", () => {
     render(<TestHarness currency="USD" />);
 
