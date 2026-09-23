@@ -1082,6 +1082,7 @@ Experiment with request volume, token consumption, and engineering effort to exp
       selfHostedBatchUtilizationGain: 0,
       tokensPerSecond: 201,
       gpuPrice: 0.1303,
+      includeElectricityCosts: false,
       trainingGpuHours: 0,
       dataPreparationCost: 0,
       hardwareCost: 23975,
