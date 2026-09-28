@@ -207,6 +207,7 @@ export function InputPanel({
     const value = (activeParams[key] ?? fallbackValues[key] ?? 0) as number;
     const isLocked = lockedFields[key] ?? false;
     const currencyField = isCurrencyField(key);
+    const decimalField = key === "gpuPowerKw";
 
     const inputKey = `${activeModel}-${key}` as `${1 | 2}-${NumericFieldKey}`;
     const displayValue = currencyField && currencyInputs[inputKey] !== undefined
@@ -220,8 +221,8 @@ export function InputPanel({
         <Label className="param-label">{label}</Label>
         <div className="relative">
           <Input
-            type={currencyField ? "text" : "number"}
-            inputMode={currencyField ? "decimal" : undefined}
+            type={currencyField || decimalField ? "text" : "number"}
+            inputMode={currencyField || decimalField ? "decimal" : undefined}
             className="param-input pr-10"
             value={displayValue}
             min={key === "gpuPowerKw" || key === "operatingHoursPerMonth" || key === "electricityPricePerKwh" ? 0 : undefined}
