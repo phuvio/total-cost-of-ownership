@@ -283,7 +283,8 @@ export function InputPanel({
             <div className="grid grid-cols-2 items-center gap-2">
               <Label className="param-label">Number of days</Label>
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 className="param-input"
                 value={days}
                 step="1"

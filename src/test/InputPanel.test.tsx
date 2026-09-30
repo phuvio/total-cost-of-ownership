@@ -3,7 +3,7 @@ import { useState } from "react";
 import { InputPanel } from "@/components/InputPanel";
 import { TCOParams, defaultParams } from "@/lib/tco-calculations";
 
-function TestHarness({ currency = "EUR" }: { currency?: "EUR" | "USD" }) {
+function TestHarness({ currency = "EUR", days = defaultParams.days }: { currency?: "EUR" | "USD"; days?: number }) {
   const [params1, setParams1] = useState<TCOParams>({
     ...defaultParams,
     modelType: "api",
@@ -22,7 +22,7 @@ function TestHarness({ currency = "EUR" }: { currency?: "EUR" | "USD" }) {
       onParams2Change={setParams2}
       activeModel={activeModel}
       onModelChange={setActiveModel}
-      days={defaultParams.days}
+      days={days}
       onDaysChange={() => undefined}
       model1Name="API model"
       model2Name="Self-hosted model"
@@ -35,11 +35,11 @@ function TestHarness({ currency = "EUR" }: { currency?: "EUR" | "USD" }) {
 }
 
 function getInputPriceInput() {
-  return screen.getAllByRole("textbox")[1] as HTMLInputElement;
+  return screen.getAllByRole("textbox")[2] as HTMLInputElement;
 }
 
 function getOutputPriceInput() {
-  return screen.getAllByRole("textbox")[2] as HTMLInputElement;
+  return screen.getAllByRole("textbox")[3] as HTMLInputElement;
 }
 
 describe("InputPanel model prices", () => {
@@ -96,5 +96,16 @@ describe("InputPanel model prices", () => {
     fireEvent.change(getInputPriceInput(), { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "API model" }));
     expect(getInputPriceInput()).toHaveValue("3");
+  });
+});
+
+describe("InputPanel timeline", () => {
+  it("keeps decimal days displayed with a dot", () => {
+    render(<TestHarness days={30.44} />);
+
+    const daysInput = screen.getByDisplayValue("30.44");
+
+    expect(daysInput).toHaveAttribute("type", "text");
+    expect(daysInput).toHaveAttribute("inputmode", "decimal");
   });
 });
