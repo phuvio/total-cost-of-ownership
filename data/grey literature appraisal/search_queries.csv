@@ -1,0 +1,25 @@
+table,round,engine,query,hits,search_date,screening
+A.1,1,Google Scholar,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",9330,2026-02-22,first 50 results screened
+A.1,1,Google Scholar,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",6610,2026-02-22,first 50 results screened
+A.2,1,Keenious,how to select cost-efficient large language model,10,2026-02-22,all results screened
+A.3,1,Semantic Scholar,how to select cost-efficient large language model,2340,2026-02-22,first 50 results screened
+A.4,1,OpenGrey,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",0,2026-02-22,all results screened
+A.4,1,OpenGrey,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",0,2026-02-22,all results screened
+A.5,1,Core,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",1249,2026-02-22,first 50 results screened
+A.5,1,Core,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",1399,2026-02-22,first 50 results screened
+A.6,1,SSRN,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",144,2026-02-22,first 50 results screened
+A.6,1,SSRN,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",29,2026-02-22,first 50 results screened
+A.7,1,OpenReview,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",0,2026-02-22,all results screened
+A.7,1,OpenReview,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",0,2026-02-22,all results screened
+A.8,1,Google,"(""large language model"" OR llm) AND (""cost optimization"" OR ""cost efficiency"") AND (selection OR decision)",1080000,2026-02-22,first 50 results screened
+A.8,1,Google,"(""large language model"" OR llm) AND (""cost trade-off"" OR ""cost reduction"") AND (deployment OR evaluation)",236000,2026-02-22,first 50 results screened
+A.9,1,HuggingFace,"""choosing cost-effective large language model""",120,2026-02-22,first 50 results screened
+A.9,1,HuggingFace,"""llm cost optimization""",17100,2026-02-22,first 50 results screened
+A.10,1,AWS,"""llm cost optimization""",5380,2026-02-22,first 50 results screened
+A.11,1,NVIDIA,"""llm cost optimization""",2390,2026-02-22,first 50 results screened
+A.12,2,Google,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",7300000,2026-03-04,first 50 results screened
+A.13,2,ACM,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",141,2026-03-04,first 50 results screened
+A.14,2,IEEE,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",7,2026-03-04,all results screened
+A.15,2,HuggingFace,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",1,2026-03-04,all results screened
+A.16,2,AWS,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",8,2026-03-04,all results screened
+A.17,2,NVIDIA,"(tco OR ""total cost of ownership"") AND (llm OR ""large language model"")",748,2026-03-04,first 50 results screened
