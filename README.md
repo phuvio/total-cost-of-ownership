@@ -112,7 +112,20 @@ Focus areas include:
 
 ## License
 
-MIT License
+Copyright 2026 Petteri Huvio
+
+This repository is dual-licensed:
+
+- **Code** is licensed under the [Apache License 2.0](LICENSE) (`Apache-2.0`). This covers the
+  source code and configuration: the web app (`src/`, `api/`, `public/`), the Python estimator
+  (`data/*.py`), the export scripts (`scripts/*.ts`, `scripts/*.mjs`), and the build and test
+  configuration files.
+- **Data** is licensed under [Creative Commons Attribution 4.0 International](LICENSE-DATA)
+  (`CC-BY-4.0`). This covers the datasets and research outputs: the CSV, JSON and XLSX files in
+  `data/`, `out/` and `scripts/`, the appraisal records in `data/appraisal/`, and the figures in
+  `figures/`.
+
+When reusing the data, please credit the author and link to this repository.
 
 ## Contributions
 
