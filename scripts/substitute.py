@@ -6,13 +6,13 @@ with different numbers in one place.
 """
 import csv, sys, pathlib, statistics
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, break_even
+from tco_model import load_cases, break_even, DATA_DIR, OUT_DIR
 from invert_reference import main as invert
 
-def main(out="out/crossvalidation_verified.csv"):
-    _, fitted = invert(out="out/inverted_reference.csv", verbose=False)
+def main(out=OUT_DIR / "crossvalidation_verified.csv"):
+    _, fitted = invert(out=OUT_DIR / "inverted_reference.csv", verbose=False)
     ref = {}
-    with open("data/reference_series_long.csv", newline="", encoding="utf-8") as fh:
+    with open(DATA_DIR / "reference_series_long.csv", newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             ref.setdefault((int(r["case"]), r["deployment_mode"]), {})[int(r["month"])] = float(r["cumulative_usd"])
 

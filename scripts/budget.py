@@ -7,11 +7,11 @@ the rearrangement B >= 0  <=>  c_api > c_self + dS/H.
 """
 import csv, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, break_even, MONTHS
+from tco_model import load_cases, break_even, MONTHS, DATA_DIR, OUT_DIR
 
 LABOUR_RATE_USD_PER_HOUR = 100.0   # illustrative conversion only
 
-def main(out="out/engineering_budget_table.csv", bill_out="out/critical_api_bill.csv"):
+def main(out=OUT_DIR / "engineering_budget_table.csv", bill_out=OUT_DIR / "critical_api_bill.csv"):
     rows, bills = [], {}
     for c in load_cases():
         dc = c.api_usd_per_month - c.energy_usd_per_month

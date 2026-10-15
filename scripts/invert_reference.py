@@ -9,11 +9,11 @@ The second is what localises the disagreement to one undisclosed parameter.
 """
 import csv, sys, pathlib, statistics
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, INPUT_SHARE, OUTPUT_SHARE
+from tco_model import load_cases, INPUT_SHARE, OUTPUT_SHARE, DATA_DIR, OUT_DIR
 
-def main(out="out/inverted_reference.csv", verbose=True):
+def main(out=OUT_DIR / "inverted_reference.csv", verbose=True):
     ref = {}
-    with open("data/reference_series_long.csv", newline="", encoding="utf-8") as fh:
+    with open(DATA_DIR / "reference_series_long.csv", newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             ref.setdefault((int(r["case"]), r["deployment_mode"]), {})[int(r["month"])] = float(r["cumulative_usd"])
 

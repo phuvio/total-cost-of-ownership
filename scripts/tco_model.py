@@ -1,9 +1,9 @@
 """Cost model for the self-hosting / API comparison.
 
-Ported from the Total Cost of Ownership estimator (src/lib/tco-calculations.ts). The 
-port  is restricted to the parameter regime those scripts use: gpuPrice = 0, hardware 
-capitalised at acquisition, electricity on the self-hosted side only, token prices 
-on the API side only.
+Ported from the TypeScript estimator (src/lib/tco-calculations.ts). The port is
+restricted to the parameter regime those scripts use: gpuPrice = 0, hardware 
+capitalised at acquisition, electricity on the self-hosted side only, token
+prices on the API side only.
 
 Conventions taken from the TypeScript, not re-invented here:
   * a month is DAYS_PER_MONTH = 30.44 days, and month m is evaluated at m * 30.44 days,
@@ -15,7 +15,28 @@ Conventions taken from the TypeScript, not re-invented here:
   * the continuous break-even day is linear interpolation of the cumulative difference
     between the two bracketing months.
 """
+import pathlib
 from dataclasses import dataclass, field
+
+
+def _locate() -> tuple[pathlib.Path, pathlib.Path]:
+    """Find the input and output directories relative to this file, not the cwd.
+
+    The scripts may sit at the repository root with inputs in `data/`, or inside
+    `data/` alongside them. Both work, and both work from any working directory.
+    """
+    here = pathlib.Path(__file__).resolve().parent
+    levels = (here, here.parent, here.parent.parent)
+    # A real data/ directory always wins over a stray copy of an input file sitting
+    # beside the scripts, so check every data/ candidate before any bare directory.
+    for data in [c / "data" for c in levels] + list(levels):
+        if (data / "case_parameters.csv").is_file():
+            repo = data.parent if data.name == "data" else data
+            return data, repo / "out"
+    raise SystemExit("case_parameters.csv not found next to the scripts or in ./data")
+
+
+DATA_DIR, OUT_DIR = _locate()
 
 DAYS_PER_MONTH = 30.44
 REQUESTS_PER_DAY = 6000
@@ -127,8 +148,9 @@ def break_even(case: Case, effort: Effort = SCENARIOS["A"], months: int = MONTHS
     return first, cont
 
 
-def load_cases(path: str = "data/case_parameters.csv") -> list[Case]:
+def load_cases(path: str | pathlib.Path | None = None) -> list[Case]:
     import csv
+    path = pathlib.Path(path) if path else DATA_DIR / "case_parameters.csv"
     out = []
     with open(path, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):

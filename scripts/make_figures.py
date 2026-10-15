@@ -50,16 +50,27 @@ def apply_style() -> None:
 
 
 # ── Inputs ───────────────────────────────────────────────────────────────────
-def load(root: pathlib.Path) -> dict[str, pd.DataFrame]:
+def locate() -> tuple[pathlib.Path, pathlib.Path]:
+    """Find the input and output directories relative to this file, not the cwd."""
+    here = pathlib.Path(__file__).resolve().parent
+    for cand in (here, here.parent, here.parent.parent):
+        for data in (cand / "data", cand):
+            if (data / "case_parameters.csv").is_file():
+                repo = data.parent if data.name == "data" else data
+                return data, repo / "out"
+    raise SystemExit("case_parameters.csv not found next to the scripts or in ./data")
+
+
+def load(data: pathlib.Path, out: pathlib.Path) -> dict[str, pd.DataFrame]:
     d = {
-        "cases": pd.read_csv(root / "data" / "case_parameters.csv"),
-        "ref": pd.read_csv(root / "data" / "reference_series_long.csv"),
-        "est": pd.read_csv(root / "out" / "estimator_outputs.csv"),
-        "err": pd.read_csv(root / "out" / "crossvalidation_errors.csv"),
-        "ver": pd.read_csv(root / "out" / "crossvalidation_verified.csv"),
-        "bud": pd.read_csv(root / "out" / "engineering_budget_table.csv"),
-        "inv": pd.read_csv(root / "out" / "inverted_reference.csv"),
-        "grid": pd.read_csv(root / "out" / "scenario_grid_results.csv"),
+        "cases": pd.read_csv(data / "case_parameters.csv"),
+        "ref": pd.read_csv(data / "reference_series_long.csv"),
+        "est": pd.read_csv(out / "estimator_outputs.csv"),
+        "err": pd.read_csv(out / "crossvalidation_errors.csv"),
+        "ver": pd.read_csv(out / "crossvalidation_verified.csv"),
+        "bud": pd.read_csv(out / "engineering_budget_table.csv"),
+        "inv": pd.read_csv(out / "inverted_reference.csv"),
+        "grid": pd.read_csv(out / "scenario_grid_results.csv"),
     }
     for k, v in d.items():
         if v.empty:
@@ -274,15 +285,14 @@ def _word(n: int) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default=".")
-    ap.add_argument("--outdir", default="figures")
+    data_dir, out_dir = locate()
+    ap.add_argument("--outdir", default=str(out_dir.parent / "figures"))
     a = ap.parse_args()
-    root = pathlib.Path(a.root)
     outdir = pathlib.Path(a.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
     apply_style()
-    D = load(root)
+    D = load(data_dir, out_dir)
     for fn in (fig1, fig2, fig3, fig4):
         _, info = fn(D, outdir)
         print(f"{fn.__name__}: {info}")

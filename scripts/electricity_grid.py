@@ -6,13 +6,13 @@ business-hours profile the cross-validation uses.
 """
 import csv, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, break_even, SCENARIOS, DAYS_PER_MONTH
+from tco_model import load_cases, break_even, SCENARIOS, DAYS_PER_MONTH, DATA_DIR, OUT_DIR
 
 TARIFFS = [0.05, 0.10, 0.15, 0.25, 0.40]
 PROFILES = {"business_160h": 160.0, "continuous_730h": round(24 * DAYS_PER_MONTH, 2)}
 BASELINE = (0.15, 160.0, "A")
 
-def main(out="out/electricity_grid.csv"):
+def main(out=OUT_DIR / "electricity_grid.csv"):
     rows = []
     for c in load_cases():
         base = None

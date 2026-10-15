@@ -27,6 +27,6 @@ dist-ssr
 .env.local
 .env.*.local
 
-scripts 
+own_scripts 
 
 __pycache__/

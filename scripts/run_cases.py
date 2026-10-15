@@ -1,9 +1,9 @@
 """Evaluate all 24 cases over their horizons and write the estimator's monthly series."""
 import csv, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, SCENARIOS
+from tco_model import load_cases, SCENARIOS, DATA_DIR, OUT_DIR
 
-def main(out="out/estimator_outputs.csv"):
+def main(out=OUT_DIR / "estimator_outputs.csv"):
     rows = []
     for c in load_cases():
         for m in range(1, c.horizon_months + 1):

@@ -6,21 +6,21 @@ published, which is why the residual has a floor.
 """
 import csv, sys, pathlib, statistics
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases
+from tco_model import load_cases, DATA_DIR, OUT_DIR
 
 def stratum(c):
     if c.gpu == "RTX 5090":                return "RTX 5090 (1 GPU)"
     return "A100 (1-2 GPUs)" if c.n_gpu <= 2 else "A100 (4-8 GPUs)"
 
-def load_reference(path="data/reference_series_long.csv"):
+def load_reference(path=DATA_DIR / "reference_series_long.csv"):
     ref = {}
     with open(path, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             ref[(int(r["case"]), r["deployment_mode"], int(r["month"]))] = float(r["cumulative_usd"])
     return ref
 
-def main(series_path="out/estimator_outputs.csv", out="out/crossvalidation_errors.csv",
-         table_out="out/table2_api_columns.csv"):
+def main(series_path=OUT_DIR / "estimator_outputs.csv", out=OUT_DIR / "crossvalidation_errors.csv",
+         table_out=OUT_DIR / "table2_api_columns.csv"):
     ref = load_reference()
     est = {}
     with open(series_path, newline="", encoding="utf-8") as fh:

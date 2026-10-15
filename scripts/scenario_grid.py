@@ -7,9 +7,9 @@ are comparable; reporting it over each level's own survivors would not be.
 """
 import csv, sys, pathlib, statistics
 sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
-from tco_model import load_cases, break_even, SCENARIOS, MONTHS
+from tco_model import load_cases, break_even, SCENARIOS, MONTHS, DATA_DIR, OUT_DIR
 
-def main(out="out/scenario_grid_results.csv"):
+def main(out=OUT_DIR / "scenario_grid_results.csv"):
     cases = load_cases()
     # The effort scenarios run over the full 24-month horizon, not each case's own
     # cross-validation horizon: those horizons come from the reference calculator and
