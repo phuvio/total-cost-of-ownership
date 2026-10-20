@@ -1,70 +1,83 @@
 # Total Cost of Ownership Estimator
 
-A framework and interactive calculator for estimating the Total Cost of Ownership (TCO) of Large Language Model (LLM) applications.
+A framework and interactive calculator for estimating the Total Cost of Ownership (TCO) of
+Large Language Model (LLM) applications.
 
-This project is developed as part of a master's thesis at University of Helsinki focusing on cost-aware selection and deployment of Large Language Models in production environments.
+This project is developed as part of a master's thesis at the University of Helsinki on
+cost-aware selection and deployment of Large Language Models in production environments.
 
-The interactive Total Cost of Ownership Estimator can be accessed here:
+The interactive estimator is at
 [https://phuvio.github.io/total-cost-of-ownership/](https://phuvio.github.io/total-cost-of-ownership/).
+
+## Replication material
+
+The repository also contains the complete replication material for the paper
+*"Self-Hosting or API? Undisclosed Parameters and the Engineering-Effort Boundary in LLM
+Deployment Architecture."* If you arrived here from the paper, start at
+[`README-replication.md`](README-replication.md), which maps every numeric claim in the
+paper to the file and script that produce it.
+
+| Directory | Contents |
+|---|---|
+| `scripts/` | the analysis pipeline — `run_all.py` regenerates every table, `make_figures.py` every figure |
+| `data/` | case parameters, published parameter tables, and the reference model's extracted figures |
+| `out/` | everything the pipeline regenerates |
+| `figures/` | the paper's Figures 1–4 |
+| `data/appraisal/` | the grey-literature appraisal: protocol, per-source scores, search record |
+
+```
+python scripts/run_all.py        # regenerates every table in out/
+python scripts/make_figures.py   # regenerates Figures 1-4 in figures/
+```
+
+Python 3.10 or later. `run_all.py` and the step scripts use only the standard library;
+`make_figures.py` additionally needs numpy, pandas and matplotlib (`requirements.txt`).
 
 ## Purpose
 
-Deploying LLM-based applications involves significantly more than API token pricing. Real-world costs may include:
+Deploying LLM-based applications involves more than API token pricing. Real-world costs may
+include inference, training and fine-tuning, GPU and infrastructure, retrieval and vector
+databases, guardrails and moderation, engineering and implementation effort, and the effect
+of optimization techniques such as caching, routing, batching and quantization.
 
-- Inference costs
-- Training and fine-tuning costs
-- GPU and infrastructure costs
-- Retrieval and vector database costs
-- Guardrails and moderation systems
-- Engineering and implementation effort
-- Optimization techniques such as caching, routing, batching, and quantization
-
-The goal of this project is to provide a practical framework for:
-
-- Comparing different LLM deployment strategies
-- Estimating training vs. inference cost trade-offs
-- Identifying crossover points where inference costs dominate
-- Evaluating the impact of optimization techniques on total cost
+The project provides a practical framework for comparing deployment strategies, estimating
+training-versus-inference trade-offs, identifying crossover points where inference cost
+dominates, and evaluating how optimization decisions affect total lifecycle cost.
 
 ## Features
 
-- Interactive TCO calculator
-- Training vs. inference crossover visualization
-- Cost breakdown analysis
-- Multiple deployment modes:
-  - API-based models
-  - Cloud-hosted models
-  - Self-hosted models
-- Optimization modeling:
-  - Caching
-  - Model routing
-  - Quantization
-  - Prompt compression
-  - Batching
-  - Speculative decoding
-- Adjustable assumptions and scenario analysis
+The calculator implements:
 
-## Research Context
+- an interactive TCO calculator with cost breakdown and a training-versus-inference
+  crossover visualization;
+- three deployment modes — API-based, cloud-hosted and self-hosted;
+- optimization modeling for caching, model routing, quantization, prompt compression,
+  batching and speculative decoding;
+- adjustable assumptions and scenario analysis.
 
-The framework is informed by:
+**What the paper evaluates is narrower than what the calculator implements.** The paper's
+cross-validation exercises the API and self-hosted modes with every optimization term set
+to zero, which is the parameterization its Section IV describes and Section III.E bounds.
+The optimization factors above are extension points in the model, not terms this study
+validated. Treat the calculator's optimization outputs as illustrative.
 
-- Scientific literature on LLM inference and deployment
-- AACODS-evaluated grey literature
-- Industry documentation and technical reports
+## Research context
 
-The project explores how architectural and optimization decisions affect the total lifecycle cost of LLM systems.
+The framework is informed by scientific literature on LLM inference and deployment, by
+industry documentation and technical reports, and by a grey-literature review appraised
+with the AACODS criteria: **96 sources appraised, 41 core, 23 supporting, 32 excluded.** The
+protocol, the per-source scores and the search record are in `data/appraisal/`, including
+the excluded sources and their scores, so the exclusion decisions are checkable.
 
-## Tech Stack
+## Tech stack
 
-- React
-- TypeScript
-- Tailwind CSS
-- Recharts
-- Vite
+React, TypeScript, Tailwind CSS, Recharts, Vite. The analysis pipeline is Python.
 
-## Monthly TCO from the Terminal
+## Monthly TCO from the terminal
 
-The monthly TCO function evaluates cumulative TCO every 30 days from day 30 through day 720. Provide a JSON file containing any model fields to override; omitted fields use the calculator defaults:
+The monthly TCO function evaluates cumulative TCO every 30 days from day 30 through day
+720. Provide a JSON file containing any model fields to override; omitted fields use the
+calculator defaults:
 
 ```powershell
 npm run tco:monthly -- --file model.json
@@ -81,52 +94,69 @@ Example `model.json`:
 }
 ```
 
-The command prints JSON with 24 cumulative `tco` results, one for each 30-day period through 720 days. Model JSON can also be piped through standard input.
+The command prints JSON with 24 cumulative `tco` results, one per 30-day period. Model JSON
+can also be piped through standard input.
 
-## Agent Endpoint
+## Agent endpoint
 
-The AI setup agent uses the `/api/agent` endpoint in development and production.
+The repository includes an optional AI setup agent that suggests parameter values in the
+user interface, served at `/api/agent`.
 
 - In development, Vite serves the endpoint through local middleware.
-- In production, deploy the app to Vercel or another serverless host that serves `api/agent.ts`.
-- Set `ANTHROPIC_API_KEY` in the serverless environment to enable Claude-backed responses.
-- If the key is absent, the handler falls back to deterministic local suggestions.
+- In production, deploy to Vercel or another serverless host that serves `api/agent.ts`.
+- Set `ANTHROPIC_API_KEY` in the serverless environment to enable model-backed responses.
+- Without the key, the handler falls back to deterministic local suggestions.
+
+**The agent is a user-interface convenience and plays no part in the cost model.** No result
+in the paper or the thesis depends on it, and the analysis pipeline does not call it.
 
 ## Status
 
-Prototype / research project under active development.
+The **web application** is a prototype under active development, intended for
+experimentation, visualization and research rather than production-grade financial
+estimation.
 
-The current implementation is intended for experimentation, visualization, and research purposes rather than production-grade financial estimation.
+The **replication material** is frozen at the state that produced the paper's results. The
+pipeline regenerates every table and figure from `data/case_parameters.csv` in one pass, so
+the deposited outputs and the paper are one run.
 
-## Thesis Topic
+## Thesis
 
-Cost-Aware Selection and Deployment of Large Language Models
+*A Framework for Estimating the Total
+Cost of Ownership of LLM Applications* — total cost of ownership,
+inference optimization, cost-performance trade-offs, production deployment considerations
+and LLM system architecture.
 
-Focus areas include:
+## Citing
 
-- Total Cost of Ownership (TCO)
-- Inference optimization
-- Cost-performance trade-offs
-- Production deployment considerations
-- LLM system architecture
+If you use the model, the data or the replication material, please cite the paper; see
+[`CITATION.cff`](CITATION.cff). When reusing the data, credit the author and link to this
+repository.
 
 ## License
 
 Copyright 2026 Petteri Huvio
 
-This repository is dual-licensed:
+This repository is dual-licensed, and the split follows the directory:
 
-- **Code** is licensed under the [Apache License 2.0](LICENSE) (`Apache-2.0`). This covers the
-  source code and configuration: the web app (`src/`, `api/`, `public/`), the Python estimator
-  (`data/*.py`), the export scripts (`scripts/*.ts`, `scripts/*.mjs`), and the build and test
-  configuration files.
-- **Data** is licensed under [Creative Commons Attribution 4.0 International](LICENSE-DATA)
-  (`CC-BY-4.0`). This covers the datasets and research outputs: the CSV, JSON and XLSX files in
-  `data/`, `out/` and `scripts/`, the appraisal records in `data/appraisal/`, and the figures in
-  `figures/`.
+- **Code** — [Apache License 2.0](LICENSE) (`Apache-2.0`). The web app (`src/`, `api/`,
+  `public/`), the analysis pipeline and export scripts (`scripts/`), and the build and test
+  configuration.
+- **Data** — [Creative Commons Attribution 4.0 International](LICENSE-DATA)
+  (`CC-BY-4.0`). The datasets and research outputs in `data/`, `out/` and `figures/`,
+  including the appraisal records in `data/appraisal/`.
 
-When reusing the data, please credit the author and link to this repository.
+So that the split stays true by directory, data files do not live under a code directory and
+source files do not live under a data one.
+
+**One exception, and it matters.** Parts of `data/` are not the author's to license. The
+reference model's published figures in `data/reference_cases.csv` and
+`data/reference_series_long.csv` were extracted from another group's published calculator
+and are included so that the paper's cross-validation can be checked. The CC-BY-4.0 grant
+covers this project's own contribution — the file structure, the case construction, the
+derived columns and the estimator's own outputs — and does not extend to those extracted
+values. **See [`THIRD_PARTY.md`](THIRD_PARTY.md) before reusing anything under `data/`.**
 
 ## Contributions
 
-This repository is currently part of an academic research project, but feedback and ideas are welcome.
+This repository is part of an academic research project, but feedback and ideas are welcome.
