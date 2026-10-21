@@ -86,9 +86,9 @@ React, TypeScript, Tailwind CSS, Recharts, Vite. The analysis pipeline is Python
 
 ## Monthly TCO from the terminal
 
-The monthly TCO function evaluates cumulative TCO every 30 days from day 30 through day
-720. Provide a JSON file containing any model fields to override; omitted fields use the
-calculator defaults:
+`scripts/tco-monthly.ts` evaluates cumulative TCO month by month over 24 months, using the same 30.44-day month as the cost model. It calls `calculateTCO` from `src/lib/tco-calculations.ts` directly, so it is the way to exercise the TypeScript implementation — the authoritative one — from the command line.
+
+Provide a JSON file containing any model fields to override; omitted fields use the calculator defaults:
 
 ```powershell
 npm run tco:monthly -- --file model.json
@@ -105,8 +105,7 @@ Example `model.json`:
 }
 ```
 
-The command prints JSON with 24 cumulative `tco` results, one per 30-day period. Model JSON
-can also be piped through standard input.
+The command writes a CSV of 24 rows — one per month — with columns `month`, `cumulativeHardwareSetupCost`, `cumulativeInferenceCost`, `cumulativeEngineeringOperationalCost`, `cumulativeEnergyCost` and `cumulativeTCO`. It prints the row count, the monthly electricity cost and the month-24 TCO to the terminal. Model JSON can also be passed as an argument or piped through standard input. `--output` defaults to `scripts/tco-monthly.csv`; pass `out/` as above to keep generated data out of the code directory.
 
 ## Agent endpoint
 
