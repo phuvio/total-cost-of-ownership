@@ -1,0 +1,6 @@
+{
+  "modelType": "api",
+  "inputTokenPrice": 2.175,
+  "outputTokenPrice": 13.05,
+  "requestsPerDay": 10000
+}
