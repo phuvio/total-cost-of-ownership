@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software or data, please cite the article in preferred-citation."
+title: "Total Cost of Ownership Estimator for Large Language Model Applications"
+abstract: >-
+  An independent cost model and interactive calculator for comparing hosted inference APIs
+  with self-hosted open-weight model deployment, together with the replication material for
+  the accompanying article: the analysis pipeline, the matched deployment cases, the
+  cross-validation outputs, and the grey-literature appraisal records.
+type: software
+authors:
+  - name: "Anonymous Author"
+license: Apache-2.0
+repository-code: "https://anonymous.4open.science/r/tco-llm-deployment-E214/"
+keywords:
+  - total cost of ownership
+  - large language models
+  - deployment architecture
+  - break-even analysis
+  - cost modeling
+preferred-citation:
+  type: conference-paper
+  title: >-
+    Self-Hosting or API? Undisclosed Parameters and the Engineering-Effort Boundary in LLM
+    Deployment Architecture
+  authors:
+    - name: "Anonymous Author"
+  collection-title: >-
+    Proceedings of the 6th International Conference on AI Engineering - Software Engineering
+    for AI (CAIN)
+  year: 2027

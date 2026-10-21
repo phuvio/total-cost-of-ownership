@@ -30,3 +30,5 @@ dist-ssr
 own_scripts 
 
 __pycache__/
+
+CITATION-cameraready.cff
