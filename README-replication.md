@@ -14,7 +14,7 @@ describes and Section III.E bounds.
 
 ## Reproduce everything
 
-```
+```python
 python scripts/run_all.py        # regenerates every table in out/
 python scripts/make_figures.py   # regenerates Figures 1-4 in figures/
 ```
@@ -25,7 +25,7 @@ invocation directory does not matter. Run them as `python scripts/run_all.py` fr
 repository root, or from inside `scripts/`; either way the tables land in `out/` and the
 figures in `figures/`. **Python 3.10 or later** (the only
 version-sensitive construct is a PEP 604 union in `scripts/tco_model.py`); developed on 3.11
-and 3.12. `run_all.py` and the eight step scripts use **only the standard library** — if
+and 3.12. `run_all.py` and the seven step scripts use **only the standard library** — if
 you want to check the numbers rather than redraw the figures, you need nothing installed.
 `make_figures.py` needs numpy, pandas and matplotlib; see `requirements.txt`.
 
@@ -35,7 +35,7 @@ Each numeric claim in the paper against the file that holds it and the script th
 produces it.
 
 | Claim | Value | File | Script |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | API monthly rates agree (§I, §V.A, abstract) | within 0.0046%, mean 0.0011% | `out/inverted_reference.csv` | `invert_reference.py` |
 | API trajectory MAPE (Table II) | 0.0037% mean, 0.0021% median, 0.0130% worst | `out/crossvalidation_errors.csv`, `out/table2_api_columns.csv` | `crossvalidate.py` |
 | Self-deployed MAPE, 18 de-duplicated cases (Table II) | 0.8776% mean, 0.9010% median, 1.8485% worst | `out/crossvalidation_errors.csv` | `crossvalidate.py` |
@@ -114,7 +114,7 @@ differently.
 
 ## Layout
 
-```
+```text
 scripts/tco_model.py      the cost model (Python); see the note below
 scripts/run_all.py        regenerates every table in out/
 scripts/run_cases.py      evaluates all 24 cases, both modes, over their horizons
