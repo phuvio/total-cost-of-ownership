@@ -89,7 +89,7 @@ The split is by directory, with no per-extension caveat, so anyone copying a dir
 wholesale gets one licence and one set of obligations:
 
 | Directory | Contents | Licence |
-|---|---|---|
+| --- | --- | --- |
 | `src/`, `api/`, `public/`, `scripts/` | source code, including the Python analysis scripts | Apache-2.0 |
 | `data/`, `out/`, `figures/` | inputs, regenerated tables, figures | CC-BY-4.0, subject to §1 above |
 
