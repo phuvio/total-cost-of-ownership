@@ -1,0 +1,25 @@
+case,self_hosted_model,gpu,n_gpu,gpu_power_w_calculator,api_model,tokens_m_per_month,api_price_in_usd_per_mtok,api_price_out_usd_per_mtok,break_even_month,horizon_months
+1,EXAONE 4.0 32B,RTX 5090,1,500,GPT-5,126.7,1.25,10.0,3.0,8
+2,EXAONE 4.0 32B,RTX 5090,1,500,Claude-4 Opus,126.7,15.0,75.0,1.0,6
+3,EXAONE 4.0 32B,RTX 5090,1,500,Gemini 2.5 Pro,126.7,1.5,10.0,3.0,8
+4,Qwen3-30B,RTX 5090,1,500,GPT-5,114.0,1.25,10.0,3.0,8
+5,Qwen3-30B,RTX 5090,1,500,Claude-4 Opus,114.0,15.0,75.0,1.0,6
+6,Magistral Small,RTX 5090,1,500,GPT-5,95.0,1.25,10.0,4.0,9
+7,Llama-3.3-70B,A100,1,400,GPT-5,120.4,1.25,10.0,15.0,20
+8,Llama-3.3-70B,A100,1,400,Claude-4 Opus,120.4,15.0,75.0,2.0,7
+9,Llama-3.3-70B,A100,1,400,Gemini 2.5 Pro,120.4,1.5,10.0,15.0,20
+10,gpt-oss-120B,A100,2,400,GPT-5,139.4,1.25,10.0,,12
+11,gpt-oss-120B,A100,2,400,Claude-4 Opus,139.4,15.0,75.0,4.0,9
+12,GLM-4.5-Air,A100,2,400,GPT-5,126.7,1.25,10.0,,12
+13,GLM-4.5-Air,A100,2,400,Gemini 2.5 Pro,126.7,1.5,10.0,,12
+14,Qwen3-235B,A100,4,400,GPT-5,253.4,1.25,10.0,,12
+15,Qwen3-235B,A100,4,400,Claude-4 Opus,253.4,15.0,75.0,4.0,9
+16,Qwen3-235B,A100,4,400,Gemini 2.5 Pro,253.4,1.5,10.0,,12
+17,GLM-4.5,A100,6,400,GPT-5,253.4,1.25,10.0,,12
+18,GLM-4.5,A100,6,400,Claude-4 Opus,253.4,15.0,75.0,6.0,11
+19,GLM-4.5,A100,6,400,Gemini 2.5 Pro,253.4,1.5,10.0,,12
+20,Kimi-K2,A100,8,400,GPT-5,506.9,1.25,10.0,,12
+21,Kimi-K2,A100,8,400,Claude-4 Opus,506.9,15.0,75.0,4.0,9
+22,Kimi-K2,A100,8,400,Gemini 2.5 Pro,506.9,1.5,10.0,,12
+23,Llama-3.3-70B,A100,1,400,Claude-4 Sonnet,120.4,3.0,15.0,10.0,15
+24,gpt-oss-120B,A100,2,400,Claude-4 Sonnet,139.4,3.0,15.0,17.0,22
