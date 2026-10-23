@@ -5,7 +5,7 @@ the Engineering-Effort Boundary in LLM Deployment Architecture."*
 
 Anonymised for double-anonymous review.
 
-This deposit exists so that every number in the paper can be checked. It is not the
+This deposit exists so the seven analysis steps in the paper can be checked. It is not the
 estimator's application repository: the interactive calculator, its web front end, its
 optimisation features and its deployment instructions are out of scope here. The
 cost model included is the one the paper's cross-validation exercises, with every
@@ -116,7 +116,7 @@ differently.
 
 ```text
 scripts/tco_model.py      the cost model (Python); see the note below
-scripts/run_all.py        regenerates every table in out/
+scripts/run_all.py        regenerates every table, except: `derived_shares.csv`, in out/
 scripts/run_cases.py      evaluates all 24 cases, both modes, over their horizons
 scripts/crossvalidate.py  MAPE against the reference series, per case and per stratum
 scripts/invert_reference.py  recovers the reference model's token volumes and recurring rate
