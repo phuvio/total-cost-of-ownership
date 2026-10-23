@@ -15,7 +15,7 @@ describes and Section III.E bounds.
 ## Reproduce everything
 
 ```python
-python scripts/run_all.py        # regenerates every table in out/
+python scripts/run_all.py        # regenerates the nine result tables in out/
 python scripts/make_figures.py   # regenerates Figures 1-4 in figures/
 ```
 
@@ -116,7 +116,7 @@ differently.
 
 ```text
 scripts/tco_model.py      the cost model (Python); see the note below
-scripts/run_all.py        regenerates every table, except: `derived_shares.csv`, in out/
+scripts/run_all.py        regenerates the nine result tables in out/
 scripts/run_cases.py      evaluates all 24 cases, both modes, over their horizons
 scripts/crossvalidate.py  MAPE against the reference series, per case and per stratum
 scripts/invert_reference.py  recovers the reference model's token volumes and recurring rate
