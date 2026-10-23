@@ -12,8 +12,6 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "tco:monthly": "tsx scripts/tco-monthly.ts",
-    "tco:scenarios": "tsx scripts/export-tco-scenarios.ts",
-    "tco:api-scenarios": "tsx scripts/export-api-scenarios.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
