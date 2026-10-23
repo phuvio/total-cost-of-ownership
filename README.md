@@ -154,7 +154,7 @@ This repository is dual-licensed, and the split follows the directory:
   configuration.
 - **Data** — [Creative Commons Attribution 4.0 International](LICENSE-DATA)
   (`CC-BY-4.0`). The datasets and research outputs in `data/`, `out/` and `figures/`,
-  including the appraisal records in `data/appraisal/`.
+  including the appraisal records in `appraisal/`.
 
 So that the split stays true by directory, data files do not live under a code directory and
 source files do not live under a data one.
