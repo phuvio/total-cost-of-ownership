@@ -51,7 +51,7 @@ produces it.
 | Critical API bill (§VI.C) | \$97.13 (1×RTX 5090) to \$4,076.80 (8×A100) | `out/critical_api_bill.csv` | `budget.py` |
 | Scenario grid (§VI.D, Fig. 4) | 15 / 7 / 7 / 7 at \$0 / \$30,000 / \$88,000 / \$132,000 | `out/scenario_grid_results.csv` | `scenario_grid.py` |
 | Mean break-even over the seven common survivors (§VI.D) | 3.14 / 4.14 / 6.86 / 12.14 | `out/scenario_grid_results.csv` | `scenario_grid.py` |
-| Electricity sensitivity (§VI.E) | 960 combinations; break-even differs from baseline in 161 | `out/electricity_grid.csv` | `electricity_grid.py` |
+| Electricity sensitivity (§VI.E) | 1,920 combinations; acquired hardware shifts break-even by at most 2.51 months, existing hardware by up to 125.0%; three cases lose break-even at $0.40/kWh | `out/electricity_grid.csv` | `electricity_grid.py` |
 | Recurring cost as a share of the API bill (§VII) | 0.145%-3.209%, median 1.5% | `data/derived_shares.csv` | — (derived in place) |
 | Grey-literature appraisal (§II) | 96 appraised, 41 core, 23 supporting, 32 excluded | `appraisal/sources.csv` | — (transcribed) |
 
@@ -104,7 +104,7 @@ differently.
    0.8920% MAPE rather than 0.8776%. The flag is the `dedup` column.
 2. **Horizon.** The cross-validation uses each case's own horizon, taken from the reference
    calculator's published break-even, which is why horizons range from 6 to 22 months. The
-   **effort scenarios of Section VI.D use the full 24 months**, since those horizons exist
+   **effort scenarios of Sections VI.D and VI.E use the full 24 months**, since those horizons exist
    only to match the reference series. Running the scenarios on the per-case horizons gives
    counts of 15 / 7 / 6 / 3 instead of 15 / 7 / 7 / 7.
 3. **Rounding basis.** Percentage errors come from unrounded estimator values, as above.
@@ -123,7 +123,7 @@ scripts/invert_reference.py  recovers the reference model's token volumes and re
 scripts/substitute.py     re-runs the self-deployed side with the fitted rates
 scripts/budget.py         B, H*, and the critical API bill
 scripts/scenario_grid.py  the four effort scenarios
-scripts/electricity_grid.py  the tariff x profile x scenario x case grid
+scripts/electricity_grid.py  the tariff x profile x hardware-state x scenario x case grid
 scripts/make_figures.py   Figures 1-4, with no plotted value or title number hardcoded
 src/lib/tco-calculations.ts  the cost model as implemented and used to produce the results
 data/                     inputs and published parameter tables
@@ -131,6 +131,22 @@ out/                      everything the scripts regenerate
 figures/                  Figures 1-4
 appraisal/                the grey-literature appraisal behind Section II
 ```
+
+### The electricity grid
+
+`out/electricity_grid.csv` crosses five tariffs ($0.05–$0.40/kWh), two operating profiles
+(160 h business hours, 730.56 h continuous), **two hardware states** and four effort
+scenarios over the 24 cases — 1,920 rows. The `owned` state sets the self-deployed
+acquisition cost to zero, modelling a deployment on hardware the team already has;
+`acquired` is the purchase case the cross-validation uses.
+
+Section VI.E's figures are the **tariff span**: break-even at $0.40/kWh minus break-even at
+$0.05/kWh, in `tariff_span_months`, and the same quantity relative to the $0.05 value in
+`tariff_span_pct`. That is a different question from `shift_months`, which measures
+displacement from the $0.15 baseline the cross-validation assumes, and both are in the file.
+`lost_at_max_tariff` flags the three cases — 17, 19 and 23 — that break even at $0.05 but
+not at $0.40. Break-even here is the linearly interpolated crossing, not the first whole
+month, so a shift of a fraction of a month is representable.
 
 The scripts resolve `data/` and `out/` from their own location, so `python scripts/run_all.py`
 from the repository root and `python run_all.py` from inside `scripts/` both work and both
